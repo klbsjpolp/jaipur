@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Jaipur - Classic Theme</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="date=no">
+    <link rel="stylesheet" type="text/css" href="assets/classic.css">
+    <style>
+        /* Card slot styles */
+        .card-slot {
+            width: 84px;
+            height: 44px;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin: 4px;
+            display: inline-block;
+        }
+
+        .card-slots-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        /* Card Colors - Keeping original colors */
+        :root {
+            --diamant-color: #569CD6;
+            --or-color: #DCDCAA;
+            --argent-color: #B5CEA8;
+            --tissu-color: #C586C0;
+            --epice-color: #CE9178;
+            --cuir-color: #D7BA7D;
+            --chameau-color: #8B4513;
+        }
+
+        /* Game section styles */
+        .game-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: black;
+            padding: 30px;
+            border: 3px solid var(--orange);
+            border-radius: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .modal-content h2 {
+            color: var(--orange);
+            text-align: center;
+            margin-top: 0;
+        }
+
+        /* Custom styles for game layout */
+        .game-panel {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .action-buttons-row {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            align-items: center;
+        }
+
+        /* Left frame content */
+        .left-frame-content {
+            padding: 10px;
+            margin-top: 20px;
+        }
+
+        .left-frame-section {
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .left-frame-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--orange);
+        }
+
+        /* Player panels */
+        .player-panel {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            width: 50%;
+        }
+
+        .player-panel.active {
+            --border: 2px solid white;
+            --box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .player1-header {
+            color: var(--bluey);
+            font-weight: bold;
+        }
+
+        .player2-header {
+            color: var(--peach);
+            font-weight: bold;
+        }
+
+        .market-section {
+            height: 15vh;
+        }
+
+        .actions-section {
+            height: 20vh;
+        }
+
+        .tokens-section {
+            height: 22vh;
+            align-items: center;
+        }
+
+        .players-section {
+            height: 380px;
+            max-height: unset;
+        }
+
+        .hand-section {
+            height: 97px;
+        }
+
+        .camels-section {
+            height: 97px;
+        }
+
+        .player-tokens-section {
+            height: 97px;
+        }
+
+        #token-piles {
+            display: flex;
+            gap: 10px;
+        }
+
+        .token-piles-line {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 25px;
+        }
+
+        .token-piles-line:not(:last-child) {
+            margin-bottom: 10px;
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.4;
+            filter: brightness(0.4);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        main {
+            padding-top: 0;
+        }
+
+        .token-stack-diamant > :first-child,
+        .token-stack-or > :first-child,
+        .token-stack-argent > :first-child,
+        .token-stack-tissu > :first-child,
+        .token-stack-epice > :first-child,
+        .token-stack-cuir > :first-child {
+            margin-right: 10px;
+        }
+        .token-stack-diamant > span,
+        .token-stack-or > span,
+        .token-stack-argent > span,
+        .token-stack-tissu > span,
+        .token-stack-epice > span,
+        .token-stack-cuir > span {
+            padding-inline: 0.5rem;
+            padding-block: 0.25rem;
+            margin-right: 5px;
+            color: black;
+        }
+
+        .token-stack-diamant > span { background-color: var(--diamant-color); }
+        .token-stack-or > span { background-color: var(--or-color); }
+        .token-stack-argent > span { background-color: var(--argent-color); }
+        .token-stack-tissu > span { background-color: var(--tissu-color); }
+        .token-stack-epice > span { background-color: var(--epice-color); }
+        .token-stack-cuir > span { background-color: var(--cuir-color); }
+
+        .small-buttons a {
+            height: 40px;
+            width: 112px;
+            /* Ajuster le padding pour maintenir les proportions */
+            padding: 0.25em 0.5em;
+            /* Garder la taille de police inchangée */
+            font-size: 100%;
+            /* Ajuster la marge pour un espacement correct */
+            margin: 2px;
+            /* Centrer le texte verticalement */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* S'assurer que le conteneur small-buttons s'adapte correctement */
+        .small-buttons {
+            min-height: 50%;
+            max-height: 50%;
+        }
+
+        .selected {
+            outline: 10px solid white;
+            outline-offset: -10px;
+        }
+
+        .small-buttons > .selected {
+            outline-width: 5px;
+            outline-offset: -5px;
+        }
+
+        .buttons > .diamant {
+            background-color: var(--diamant-color);
+        }
+        .buttons > .or {
+            background-color: var(--or-color);
+        }
+        .buttons > .argent {
+            background-color: var(--argent-color);
+        }
+        .buttons > .tissu {
+            background-color: var(--tissu-color);
+        }
+        .buttons > .epice {
+            background-color: var(--epice-color);
+        }
+        .buttons > .cuir {
+            background-color: var(--cuir-color);
+        }
+        .buttons > .chameau {
+            background-color: var(--chameau-color);
+        }
+
+        .right-frame main {
+            padding-left: clamp(20px, 2vw, 50px);
+        }
+
+        .wrap.small .left-frame {
+            width: 20%;
+        }
+
+        .wrap.small .right-frame main {
+            padding-left: clamp(10px, 1vw, 30px);
+        }
+
+        .text-bar {
+            color: black;
+            font-weight: bold;
+            text-align: right;
+            line-height: var(--bar-height);
+            padding-right: 10px;
+        }
+
+        .players-container {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <section class="wrap-standard" id="column-3">
+        <div class="wrap" id="gap">
+            <div class="left-frame">
+                <div>
+                    <div class="panel-3">MESSAGES</div>
+                    <div class="panel-5 market-section">MARCHÉ</div>
+                    <div class="panel-6 actions-section">ACTIONS</div>
+                    <div class="panel-7 players-section">JOUEURS</div>
+                    <div class="panel-8 tokens-section">JETONS&nbsp;<span class="hop">DISPONIBLES</span></div>
+                    <div class="panel-9"></div>
+                </div>
+            </div>
+            <div class="right-frame">
+                <div class="bar-panel">
+                    <div class="bar-6"></div>
+                    <div class="bar-7"></div>
+                    <div class="bar-8"></div>
+                    <div class="bar-9"></div>
+                    <div class="bar-10"></div>
+                </div>
+
+                <main>
+                    <div style="display: flex; justify-content: space-between; align-items: end">
+                        <div class="go-big" id="message-zone">
+                            Bienvenue à Jaipur! Cliquez sur une carte pour commencer.
+                        </div>
+                        <div class="banner">JAIPUR</div>
+                    </div>
+                    <div class="buttons market-section" id="market-cards">
+                        <a href class="" id="market-slot-0"></a>
+                        <a href class="" id="market-slot-1"></a>
+                        <a href class="" id="market-slot-2"></a>
+                        <a href class="" id="market-slot-3"></a>
+                        <a href class="" id="market-slot-4"></a>
+                    </div>
+                    <div class="action-buttons actions-section">
+                        <div class="buttons" style="margin-top: 0" id="possible-actions"></div>
+                        <div class="action-buttons-row go-big" id="possible-actions-message"></div>
+                    </div>
+                    <!-- Players section -->
+                    <div class="players-container players-section">
+                        <div class="player-panel" id="player1">
+                            <section class="wrap-standard">
+                                <div class="wrap small">
+                                    <div class="left-frame">
+                                        <div>
+                                            <div class="panel-3">MAIN</div>
+                                            <div class="panel-6 camels-section">CHAMEAUX</div>
+                                            <div class="panel-5 player-tokens-section">JETONS</div>
+                                        </div>
+                                    </div>
+                                    <div class="right-frame">
+                                        <div class="bar-panel">
+                                            <div class="bar-6 text-bar player-score"></div>
+                                            <div class="bar-7"></div>
+                                            <div class="bar-9 text-bar blink-fast" id="player1-name">
+                                                JOUEUR 1
+                                            </div>
+                                            <div class="bar-10"></div>
+                                        </div>
+                                        <main>
+                                            <div style="height: 30px"></div>
+                                            <div class="card-slots-container small-buttons buttons" id="player1-hand">
+                                                <a href="" id="player1-hand-slot-0"></a>
+                                                <a href="" id="player1-hand-slot-1"></a>
+                                                <a href="" id="player1-hand-slot-2"></a>
+                                                <a href="" id="player1-hand-slot-3"></a>
+                                                <a href="" id="player1-hand-slot-4"></a>
+                                                <a href="" id="player1-hand-slot-5"></a>
+                                                <a href="" id="player1-hand-slot-6"></a>
+                                            </div>
+                                            <div class="card-slots-container small-buttons buttons" id="player1-camels">
+                                                <a href="" id="player1-camel-slot-0"></a>
+                                                <a href="" id="player1-camel-slot-1"></a>
+                                                <a href="" id="player1-camel-slot-2"></a>
+                                                <a href="" id="player1-camel-slot-3"></a>
+                                                <a href="" id="player1-camel-slot-4"></a>
+                                                <a href="" id="player1-camel-overflow" class="disabled"></a>
+                                            </div>
+                                            <div class="game-section" id="player1-tokens">
+                                            </div>
+                                        </main>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="player-panel" id="player2">
+                            <section class="wrap-standard">
+                                <div class="wrap small">
+                                    <div class="left-frame">
+                                        <div>
+                                            <div class="panel-3">MAIN</div>
+                                            <div class="panel-6 camels-section">CHAMEAUX</div>
+                                            <div class="panel-5 player-tokens-section">JETONS</div>
+                                        </div>
+                                    </div>
+                                    <div class="right-frame">
+                                        <div class="bar-panel">
+                                            <div class="bar-6 text-bar player-score"></div>
+                                            <div class="bar-7"></div>
+                                            <div class="bar-9 text-bar blink-fast" id="player2-name">
+                                                JOUEUR 2
+                                            </div>
+                                            <div class="bar-10"></div>
+                                        </div>
+                                        <main>
+                                            <div style="height: 30px"></div>
+                                            <div class="card-slots-container small-buttons buttons" id="player2-hand">
+                                                <a href="" id="player2-hand-slot-0"></a>
+                                                <a href="" id="player2-hand-slot-1"></a>
+                                                <a href="" id="player2-hand-slot-2"></a>
+                                                <a href="" id="player2-hand-slot-3"></a>
+                                                <a href="" id="player2-hand-slot-4"></a>
+                                                <a href="" id="player2-hand-slot-5"></a>
+                                                <a href="" id="player2-hand-slot-6"></a>
+                                            </div>
+                                            <div class="card-slots-container small-buttons buttons" id="player2-camels">
+                                                <a href="" id="player2-camel-slot-0"></a>
+                                                <a href="" id="player2-camel-slot-1"></a>
+                                                <a href="" id="player2-camel-slot-2"></a>
+                                                <a href="" id="player2-camel-slot-3"></a>
+                                                <a href="" id="player2-camel-slot-4"></a>
+                                                <a href="" id="player2-camel-overflow" class="disabled"></a>
+                                            </div>
+                                            <div class="game-section" id="player2-tokens">
+                                            </div>
+                                        </main>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="tokens-section" id="token-piles">
+                        <!-- Tokens will be generated by JavaScript -->
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modals -->
+    <div class="modal" id="end-round-modal">
+        <div class="modal-content">
+            <h2>Fin de la Manche</h2>
+            <div id="round-results"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="next-round" style="background-color: var(--orange);">Manche Suivante</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="end-game-modal">
+        <div class="modal-content">
+            <h2>Fin de la Partie</h2>
+            <div id="game-results"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="new-game" style="background-color: var(--orange);">Nouvelle Partie</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="assets/lcars.js"></script>
+    <script src="jaipur-game.js"></script>
+    <script>
+        // Initialiser le jeu au chargement de la page
+        window.addEventListener('load', () => {
+            // Initialiser le jeu
+            initialiserJeu();
+
+            // Mettre à jour l'affichage initial
+            mettreAJourAffichage();
+
+            // Ajouter les gestionnaires d'événements pour les boutons modaux
+            document.getElementById("next-round").addEventListener("click", handlePreparerMancheSuivante);
+            document.getElementById("new-game").addEventListener("click", handleNouvellePartie);
+            // Vérifier si le bouton new-game-button existe avant d'ajouter l'écouteur d'événement
+            const newGameButton = document.getElementById("new-game-button");
+            if (newGameButton) {
+                newGameButton.addEventListener("click", handleNouvellePartie);
+            }
+        });
+
+        // Mettre à jour l'affichage du jeu
+        function mettreAJourAffichage() {
+            mettreAJourMarche();
+            mettreAJourJoueurs();
+            mettreAJourJetons();
+        }
+
+        // Mettre à jour l'affichage du marché
+        function mettreAJourMarche() {
+            // Vider tous les emplacements du marché
+            for (let i = 0; i < 5; i++) {
+                const slotElement = document.getElementById(`market-slot-${i}`);
+                slotElement.innerHTML = "";
+                const newSlotElement = slotElement.cloneNode(true);
+                slotElement.parentNode.replaceChild(newSlotElement, slotElement);
+            }
+
+            // Ajouter les cartes aux emplacements
+            etatJeu.marche.forEach((carte, index) => {
+                const slotElement = document.getElementById(`market-slot-${index}`);
+                slotElement.className = TYPES_MARCHANDISES[carte.type].classe;
+                slotElement.innerHTML = TYPES_MARCHANDISES[carte.type].nom;
+                slotElement.dataset.index = index;
+                const newSlotElement = slotElement.cloneNode(true);
+                slotElement.parentNode.replaceChild(newSlotElement, slotElement);
+                newSlotElement.addEventListener("click", (e) => {
+                    // Sélectionner/désélectionner la carte
+                    newSlotElement.classList.toggle("selected");
+                    mettreAJourActionsPossibles();
+                    e.preventDefault();
+                });
+            });
+
+            mettreAJourActionsPossibles();
+        }
+
+        // Mettre à jour l'affichage des joueurs
+        function mettreAJourJoueurs() {
+            for (let i = 0; i < 2; i++) {
+                const joueur = etatJeu.joueurs[i];
+                const joueurId = i + 1;
+                const playerNameElement = document.getElementById(`player${joueurId}-name`);
+
+                // Mettre en évidence le joueur actif
+                playerNameElement.classList.toggle('blink-fast', joueurId === etatJeu.joueurActif);
+
+                // Mettre à jour le score
+                playerNameElement.innerText = "JOUEUR " + joueurId + (joueur.sceaux ? ` (${joueur.sceaux} SCEAU${joueur.sceaux > 1 ? 'X' : ''})` : '');
+
+                // Mettre à jour la main du joueur
+                for (let j = 0; j < 7; j++) {
+                    const slotElement = document.getElementById(`player${joueurId}-hand-slot-${j}`);
+                    slotElement.innerHTML = "";
+                    const newSlotElement = slotElement.cloneNode(true);
+                    newSlotElement.className = "";
+                    newSlotElement.classList.add("disabled");
+                    slotElement.parentNode.replaceChild(newSlotElement, slotElement);
+                }
+
+                // Trier les cartes par type
+                const cartes = [];
+                joueur.main.forEach(carte => {
+                    if (carte.type !== "chameau") cartes.push(carte.type);
+                });
+
+                const ordreCartes = ["diamant", "or", "argent", "tissu", "epice", "cuir"];
+                cartes.sort((a, b) => ordreCartes.indexOf(a) - ordreCartes.indexOf(b));
+
+                // Ajouter les cartes aux emplacements
+                cartes.forEach((type, idx) => {
+                    if (idx < 7) {
+                        const slotElement = document.getElementById(`player${joueurId}-hand-slot-${idx}`);
+                        slotElement.classList.add(TYPES_MARCHANDISES[type].classe);
+                        slotElement.innerHTML = TYPES_MARCHANDISES[type].nom;
+                        slotElement.dataset.type = type;
+
+                        if (joueurId === etatJeu.joueurActif) {
+                            slotElement.classList.remove("disabled");
+                            slotElement.addEventListener("click", (e) => {
+                                slotElement.classList.toggle("selected");
+                                mettreAJourActionsPossibles();
+                                e.preventDefault();
+                            });
+                        }
+                    }
+                });
+
+                // Mettre à jour les chameaux
+                for (let j = 0; j < 5; j++) {
+                    const slotElement = document.getElementById(`player${joueurId}-camel-slot-${j}`);
+                    slotElement.innerHTML = "";
+                    const newSlotElement = slotElement.cloneNode(true);
+                    newSlotElement.className = "";
+                    newSlotElement.classList.add("disabled");
+                    slotElement.parentNode.replaceChild(newSlotElement, slotElement);
+                }
+
+                const camelCount = joueur.chameaux.length;
+                const displayCamels = Math.min(camelCount, 5);
+
+                for (let j = 0; j < displayCamels; j++) {
+                    const slotElement = document.getElementById(`player${joueurId}-camel-slot-${j}`);
+                    slotElement.textContent = TYPES_MARCHANDISES["chameau"].nom;
+                    slotElement.classList.add(TYPES_MARCHANDISES["chameau"].classe);
+
+                    if (joueurId === etatJeu.joueurActif) {
+                        slotElement.classList.remove("disabled");
+                        slotElement.addEventListener("click", (e) => {
+                            slotElement.classList.toggle("selected");
+                            mettreAJourActionsPossibles();
+                            e.preventDefault();
+                        });
+                    }
+                }
+
+                // Afficher le nombre de chameaux supplémentaires
+                const overflowElement = document.getElementById(`player${joueurId}-camel-overflow`);
+                if (overflowElement) {
+                    overflowElement.classList.remove(TYPES_MARCHANDISES["chameau"].classe);
+                    if (camelCount > 5) {
+                        overflowElement.textContent = `+${camelCount - 5}`;
+                        if (joueurId === etatJeu.joueurActif)
+                            overflowElement.classList.add(TYPES_MARCHANDISES["chameau"].classe);
+                    } else {
+                        overflowElement.textContent = "";
+                    }
+                }
+
+                // Mettre à jour les jetons
+                const jetonsElement = document.getElementById(`player${joueurId}-tokens`);
+
+                if (joueur.jetons.length === 0) {
+                    jetonsElement.innerHTML = "Aucun jeton amassé";
+                } else {
+                    const compteJetons = {};
+                    joueur.jetons.forEach(jeton => {
+                        if (!compteJetons[jeton.type]) {
+                            compteJetons[jeton.type] = { total: 0 };
+                        }
+                        compteJetons[jeton.type].total += jeton.valeur;
+                    });
+
+                    let jetonsHTML = "";
+                    for (const [type, data] of Object.entries(compteJetons)) {
+                        if (type.startsWith("bonus")) {
+                            jetonsHTML += `<span>Bonus ${type.substring(5)} (${data.total})</span> `;
+                        } else {
+                            jetonsHTML += `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom} (${data.total})</span> `;
+                        }
+                    }
+
+                    jetonsElement.innerHTML = jetonsHTML;
+                }
+            }
+        }
+
+        // Mettre à jour l'affichage des jetons
+        function mettreAJourJetons() {
+            const jetonsElement = document.getElementById("token-piles");
+            jetonsElement.innerHTML = "";
+
+            // Créer le conteneur pour les groupes de jetons
+            const preciousMetalsContainer = document.createElement("div");
+            preciousMetalsContainer.className = "token-piles-line";
+
+            // Jetons de métaux précieux (diamant, or, argent)
+            for (const type of ["diamant", "or", "argent"]) {
+                const stackElement = document.createElement("div");
+                stackElement.className = `token-stack-${type}`;
+
+                // Ajouter le nom du type
+                const titleSpan = document.createElement("span");
+                titleSpan.innerHTML = TYPES_MARCHANDISES[type].nom.toUpperCase();
+                stackElement.appendChild(titleSpan);
+
+                // Ajouter les jetons disponibles
+                const availableTokens = etatJeu.jetons[type];
+
+                // Valeurs maximales des jetons pour ce type
+                const maxValues = type === "diamant" ? [7, 7, 5, 5, 5] :
+                                 type === "or" ? [6, 6, 5, 5, 5] :
+                                 [5, 5, 5, 5, 5]; // argent
+
+                // Compter combien de fois chaque valeur apparaît dans les jetons disponibles
+                const valueCount = {};
+                availableTokens.forEach(value => {
+                    valueCount[value] = (valueCount[value] || 0) + 1;
+                });
+
+                // Ajouter chaque valeur de jeton
+                // Create all tokens first
+                const tokens = [];
+                maxValues.forEach(value => {
+                    const tokenSpan = document.createElement("span");
+                    tokenSpan.innerHTML = value;
+                    tokenSpan.dataset.value = value;
+                    tokens.push(tokenSpan);
+                });
+
+                // Reverse the tokens so we disable from right to left
+                tokens.reverse();
+
+                // Apply disabled state
+                tokens.forEach(tokenSpan => {
+                    const value = parseInt(tokenSpan.dataset.value);
+                    if (!valueCount[value] || valueCount[value] <= 0) {
+                        tokenSpan.classList.add("disabled");
+                    } else {
+                        valueCount[value]--;
+                    }
+                });
+
+                // Add tokens to the container in original order
+                tokens.reverse().forEach(tokenSpan => {
+                    stackElement.appendChild(tokenSpan);
+                });
+
+                preciousMetalsContainer.appendChild(stackElement);
+            }
+
+            jetonsElement.appendChild(preciousMetalsContainer);
+
+            // Créer un autre conteneur pour les marchandises
+            const goodsContainer = document.createElement("div");
+            goodsContainer.className = "token-piles-line";
+
+            // Jetons de marchandises (tissu, epice, cuir)
+            for (const type of ["tissu", "epice", "cuir"]) {
+                const stackElement = document.createElement("div");
+                stackElement.className = `token-stack-${type}`;
+
+                // Ajouter le nom du type
+                const titleSpan = document.createElement("span");
+                titleSpan.innerHTML = TYPES_MARCHANDISES[type].nom.toUpperCase();
+                stackElement.appendChild(titleSpan);
+
+                // Ajouter les jetons disponibles
+                const availableTokens = etatJeu.jetons[type];
+
+                // Valeurs maximales des jetons pour ce type
+                const maxValues = type === "tissu" ? [5, 3, 3, 2, 2, 1, 1] :
+                                 type === "epice" ? [5, 3, 3, 2, 2, 1, 1] :
+                                 [4, 3, 2, 1, 1, 1, 1, 1, 1]; // cuir
+
+                // Compter combien de fois chaque valeur apparaît dans les jetons disponibles
+                const valueCount = {};
+                availableTokens.forEach(value => {
+                    valueCount[value] = (valueCount[value] || 0) + 1;
+                });
+
+                // Ajouter chaque valeur de jeton
+                // Create all tokens first
+                const tokens = [];
+                maxValues.forEach(value => {
+                    const tokenSpan = document.createElement("span");
+                    tokenSpan.innerHTML = value;
+                    tokenSpan.dataset.value = value;
+                    tokens.push(tokenSpan);
+                });
+
+                // Reverse the tokens so we disable from right to left
+                tokens.reverse();
+
+                // Apply disabled state
+                tokens.forEach(tokenSpan => {
+                    const value = parseInt(tokenSpan.dataset.value);
+                    if (!valueCount[value] || valueCount[value] <= 0) {
+                        tokenSpan.classList.add("disabled");
+                    } else {
+                        valueCount[value]--;
+                    }
+                });
+
+                // Add tokens to the container in original order
+                tokens.reverse().forEach(tokenSpan => {
+                    stackElement.appendChild(tokenSpan);
+                });
+
+                goodsContainer.appendChild(stackElement);
+            }
+
+            jetonsElement.appendChild(goodsContainer);
+
+            // Créer un conteneur pour les bonus
+            const bonusContainer = document.createElement("div");
+            bonusContainer.className = "token-piles-line";
+
+            // Jetons bonus
+            for (const nbCartes of [3, 4, 5]) {
+                const pileElement = document.createElement("div");
+                pileElement.className = "token-pile";
+
+                const titleElement = document.createElement("span");
+                titleElement.style.fontWeight = "bold";
+                titleElement.style.marginBottom = "5px";
+                titleElement.innerHTML = `Bonus ${nbCartes}: `;
+                pileElement.appendChild(titleElement);
+
+                const countElement = document.createElement("span");
+                const count = etatJeu.jetons[`bonus${nbCartes}`].length;
+                countElement.innerHTML = count > 0 ? `${count} jeton${count > 1 ? 's' : ''}` : "(Épuisé)";
+                if (count === 0) countElement.style.opacity = "0.5";
+                pileElement.appendChild(countElement);
+
+                bonusContainer.appendChild(pileElement);
+            }
+
+            jetonsElement.appendChild(bonusContainer);
+        }
+
+        // Mettre à jour les actions possibles
+        function mettreAJourActionsPossibles() {
+            const actionsElement = document.getElementById("possible-actions");
+            actionsElement.innerHTML = "";
+
+            // Récupérer les cartes sélectionnées
+            const joueurActif = etatJeu.joueurActif;
+            const selectedMarketCards = document.querySelectorAll("#market-cards .selected");
+            const selectedMarketIndices = Array.from(selectedMarketCards).map(card => parseInt(card.dataset.index));
+            const selectedPlayerCards = document.querySelectorAll(`#player${joueurActif}-hand .selected`);
+            const selectedPlayerTypes = Array.from(selectedPlayerCards).map(card => card.dataset.type);
+            const selectedCamelCards = document.querySelectorAll(`#player${joueurActif}-camels .selected`);
+            const selectedCamelsCount = selectedCamelCards.length;
+
+            // Créer les boutons d'action
+            const takeGoodButton = document.createElement("a");
+            takeGoodButton.textContent = "Prendre 1 marchandise";
+            takeGoodButton.href = "";
+            takeGoodButton.classList.add('disabled');
+
+            const takeCamelsButton = document.createElement("a");
+            takeCamelsButton.textContent = "Prendre tous les chameaux";
+            takeCamelsButton.href = "";
+            takeCamelsButton.classList.add('disabled');
+
+            const exchangeButton = document.createElement("a");
+            exchangeButton.innerHTML = "Échanger";
+            exchangeButton.href = "";
+            exchangeButton.classList.add('disabled');
+
+            const sellButton = document.createElement("a");
+            sellButton.textContent = "Vendre";
+            sellButton.href = "";
+            sellButton.classList.add('disabled');
+
+            actionsElement.appendChild(takeGoodButton);
+            actionsElement.appendChild(takeCamelsButton);
+            actionsElement.appendChild(exchangeButton);
+            actionsElement.appendChild(sellButton);
+
+            // Activer les boutons selon les sélections
+            if (selectedPlayerCards.length > 0 || selectedCamelsCount > 0) {
+                // Vérifier si on peut vendre
+                const uniqueTypes = new Set(selectedPlayerTypes);
+                if (uniqueTypes.size === 1 && selectedCamelsCount === 0) {
+                    const type = selectedPlayerTypes[0];
+                    if (type !== "chameau") {
+                        let compteCarte = 0;
+                        etatJeu.joueurs[joueurActif - 1].main.forEach(carte => {
+                            if (carte.type === type) compteCarte++;
+                        });
+
+                        if (compteCarte >= TYPES_MARCHANDISES[type].min_vente) {
+                            sellButton.classList.remove('disabled');
+                            sellButton.addEventListener("click", (e) => {
+                                handleVendreCartes(type, selectedPlayerCards.length);
+                                clearSelections();
+                                e.preventDefault();
+                            });
+                        }
+                    }
+                }
+
+                // Vérifier si on peut échanger
+                if (selectedMarketIndices.length > 0) {
+                    exchangeButton.classList.remove('disabled');
+                    exchangeButton.addEventListener("click", (e) => {
+                        handleEchangerMarchandises(selectedPlayerTypes, selectedMarketIndices, selectedCamelsCount);
+                        clearSelections();
+                        e.preventDefault();
+                    });
+                }
+            } else if (selectedMarketCards.length > 0) {
+                // Vérifier si des chameaux sont sélectionnés
+                const hasCamel = Array.from(selectedMarketCards).some(card => {
+                    const index = parseInt(card.dataset.index);
+                    return etatJeu.marche[index].type === "chameau";
+                });
+
+                const hasGood = Array.from(selectedMarketCards).some(card => {
+                    const index = parseInt(card.dataset.index);
+                    return etatJeu.marche[index].type !== "chameau";
+                });
+
+                // Activer le bouton pour prendre tous les chameaux
+                if (hasCamel && !hasGood) {
+                    takeCamelsButton.classList.remove('disabled');
+                    takeCamelsButton.addEventListener("click", (e) => {
+                        handlePrendreTousLesChameaux();
+                        clearSelections();
+                        e.preventDefault();
+                    });
+                }
+
+                // Activer le bouton pour prendre une marchandise
+                if (selectedMarketCards.length === 1 && !hasCamel) {
+                    takeGoodButton.classList.remove('disabled');
+                    takeGoodButton.addEventListener("click", (e) => {
+                        handlePrendreCarteDuMarche(selectedMarketIndices[0]);
+                        clearSelections();
+                        e.preventDefault();
+                    });
+                }
+            }
+
+            // Ajouter un message d'aide si nécessaire
+            let messageText = "&nbsp;";
+            if (selectedPlayerCards.length > 0 && selectedMarketCards.length === 0) {
+                const uniqueTypes = new Set(selectedPlayerTypes);
+                if (uniqueTypes.size > 1) {
+                    messageText = "Vous ne pouvez vendre que des cartes du même type. Sélectionnez aussi des cartes du marché pour échanger.";
+                } else if (uniqueTypes.size === 1) {
+                    const type = selectedPlayerTypes[0];
+                    const minVente = TYPES_MARCHANDISES[type].min_vente;
+                    let compteCarte = 0;
+                    etatJeu.joueurs[joueurActif - 1].main.forEach(carte => {
+                        if (carte.type === type) compteCarte++;
+                    });
+                    if (compteCarte < minVente) {
+                        messageText = `Vous devez avoir au moins ${minVente} cartes ${TYPES_MARCHANDISES[type].nom} pour vendre.`;
+                    }
+                }
+            } else if (selectedMarketCards.length > 1 && !selectedMarketCards.values().some(card => {
+                const index = parseInt(card.dataset.index);
+                return etatJeu.marche[index].type === "chameau";
+            }) && selectedPlayerCards.length === 0 && selectedCamelsCount === 0) {
+                messageText = "Sélectionnez aussi des cartes de votre main ou des chameaux pour échanger.";
+            } else if (selectedMarketCards.length === 0 && selectedPlayerCards.length === 0 && selectedCamelsCount === 0) {
+                messageText = "Sélectionnez des cartes du marché ou de votre main";
+            }
+
+            const messageDiv = document.getElementById("possible-actions-message");
+            messageDiv.innerHTML = messageText;
+        }
+
+        // Effacer toutes les sélections
+        function clearSelections() {
+            document.querySelectorAll(".card.selected").forEach(card => {
+                card.classList.remove("selected");
+            });
+            mettreAJourActionsPossibles();
+        }
+
+        // Afficher un message
+        function afficherMessage(message) {
+            document.getElementById("message-zone").innerHTML = message;
+        }
+
+        // Fonctions de gestion des actions
+        function handlePrendreCarteDuMarche(index) {
+            const result = prendreCarteDuMarche(index);
+            afficherMessage(result.message);
+            if (result.success) mettreAJourAffichage();
+            return result.success;
+        }
+
+        function handlePrendreTousLesChameaux() {
+            const result = prendreTousLesChameaux();
+            afficherMessage(result.message);
+            if (result.success) mettreAJourAffichage();
+            return result.success;
+        }
+
+        function handleVendreCartes(type, quantite) {
+            const result = vendreCartes(type, quantite);
+            afficherMessage(result.message);
+            if (result.success) {
+                mettreAJourAffichage();
+                if (result.mancheTerminee) handleTerminerManche();
+            }
+            return result.success;
+        }
+
+        function handleEchangerMarchandises(cartesJoueur, cartesMarche, nombreChameaux) {
+            const result = echangerMarchandises(cartesJoueur, cartesMarche, nombreChameaux);
+            afficherMessage(result.message);
+            if (result.success) mettreAJourAffichage();
+            return result.success;
+        }
+
+        function handleTerminerManche() {
+            const result = terminerManche();
+
+            const resultsElement = document.getElementById("round-results");
+            resultsElement.innerHTML = `
+                <p>Joueur 1: ${etatJeu.joueurs[0].pointsManche} points</p>
+                <p>Joueur 2: ${etatJeu.joueurs[1].pointsManche} points</p>
+                ${result.bonusChameaux > 0 ? `<p>Joueur ${result.bonusChameaux} gagne 5 points pour avoir le plus de chameaux!</p>` : ''}
+                ${result.gagnantManche > 0 ? `<p>Joueur ${result.gagnantManche} remporte la manche et gagne un sceau d'excellence!</p>` : `<p>Égalité! Aucun joueur ne gagne de sceau d'excellence.</p>`}
+                <p>Sceaux d'excellence: Joueur 1: ${etatJeu.joueurs[0].sceaux}, Joueur 2: ${etatJeu.joueurs[1].sceaux}</p>
+            `;
+
+            document.getElementById("end-round-modal").style.display = "block";
+
+            if (result.partieTerminee) handleTerminerJeu();
+        }
+
+        function handlePreparerMancheSuivante(e) {
+            preparerMancheSuivante();
+            mettreAJourAffichage();
+            document.getElementById("end-round-modal").style.display = "none";
+            if (e && e.preventDefault) e.preventDefault();
+        }
+
+        function handleTerminerJeu(e) {
+            const resultsElement = document.getElementById("game-results");
+            resultsElement.innerHTML = `
+                <p>Joueur 1: ${etatJeu.joueurs[0].sceaux} sceau${etatJeu.joueurs[0].sceaux > 1 ? 'x' : ''} d'excellence</p>
+                <p>Joueur 2: ${etatJeu.joueurs[1].sceaux} sceau${etatJeu.joueurs[1].sceaux > 1 ? 'x' : ''} d'excellence</p>
+                ${etatJeu.gagnantPartie > 0 ? `<p>Le Joueur ${etatJeu.gagnantPartie} remporte la partie!</p>` : `<p>Égalité!</p>`}
+            `;
+
+            document.getElementById("end-round-modal").style.display = "none";
+            document.getElementById("end-game-modal").style.display = "block";
+            if (e && e.preventDefault) e.preventDefault();
+        }
+
+        function handleNouvellePartie(e) {
+            nouvellePartie();
+            mettreAJourAffichage();
+            document.getElementById("end-game-modal").style.display = "none";
+            if (e && e.preventDefault) e.preventDefault();
+        }
+    </script>
+    <div class="headtrim"> </div>
+    <div class="baseboard"> </div>
+</body>
+</html>

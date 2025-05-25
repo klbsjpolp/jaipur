@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaipur - Jeu de Console</title>
+    <style>
+        body {
+            background-color: #1E1E1E;
+            color: #D4D4D4;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .console {
+            max-width: 1000px;
+            max-height: 800px;
+            margin: 0 auto;
+            border: 1px solid #444;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .info-zone {
+            color: cyan;
+            margin-bottom: 15px;
+            padding: 5px;
+            border: 1px solid #333;
+            background-color: #252525;
+        }
+
+        .market-zone {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #252525;
+        }
+
+        .market-title {
+            color: yellow;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .market-cards {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            padding: 5px 10px;
+            margin: 5px;
+            border: 1px solid;
+            border-color: inherit;
+            cursor: pointer;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .card:hover {
+            background-color: #333;
+        }
+
+        .card.selected {
+            background-color: #444;
+            border: 1px solid #888;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .player-zone {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .player {
+            width: 48%;
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #252525;
+        }
+
+        .player.active {
+            border: 2px solid #FFF;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .player-title {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .player1-title {
+            color: #4CAF50; /* Green */
+        }
+
+        .player2-title {
+            color: #2196F3; /* Blue */
+        }
+
+        .player-hand, .player-camels, .player-tokens {
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #333;
+            background-color: #1E1E1E;
+        }
+
+        .tokens-zone {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #252525;
+        }
+
+        .tokens-title {
+            color: yellow;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .token-piles {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .token-pile {
+            padding: 5px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .actions-zone {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #252525;
+        }
+
+        .actions-title {
+            color: yellow;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .action-button {
+            padding: 8px 15px;
+            margin: 5px;
+            background-color: #333;
+            border: 1px solid #555;
+            color: white;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            background-color: #444;
+        }
+
+        .action-message {
+            padding: 8px 15px;
+            margin: 5px;
+            background-color: #252525;
+            border: 1px solid #444;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .message-zone {
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #252525;
+            min-height: 60px;
+            margin-bottom: 15px;
+        }
+
+        /* Couleurs des marchandises */
+        .diamant {
+            color: #569CD6; /* Bleu Brillant */
+            border-color: #569CD6;
+        }
+
+        .or {
+            color: #DCDCAA; /* Jaune Brillant */
+            border-color: #DCDCAA;
+        }
+
+        .argent {
+            color: #B5CEA8; /* Gris Clair/Blanc */
+            border-color: #B5CEA8;
+        }
+
+        .tissu {
+            color: #C586C0; /* Magenta Brillant */
+            border-color: #C586C0;
+        }
+
+        .epice {
+            color: #CE9178; /* Orange/Rouge Clair */
+            border-color: #CE9178;
+        }
+
+        .cuir {
+            color: #D7BA7D; /* Marron Clair/Jaune Foncé */
+            border-color: #D7BA7D;
+        }
+
+        .chameau {
+            color: #8B4513; /* Brown */
+            border-color: #8B4513;
+        }
+
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #252525;
+            padding: 20px;
+            border: 1px solid #555;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="console">
+        <div class="header">
+            <h1>JAIPUR</h1>
+        </div>
+
+
+        <div class="market-zone">
+            <div class="market-title">MARCHÉ</div>
+            <div class="market-cards" id="market-cards">
+                <!-- Les cartes du marché seront générées ici par JavaScript -->
+            </div>
+            <div class="market-actions" id="market-actions" style="margin-top: 10px; display: flex; align-items: center;">
+                <p style="margin-right: 10px; white-space: nowrap;">Action(s) possible(s):</p>
+                <div class="action-buttons" id="possible-actions" style="display: inline-flex; flex-wrap: wrap;">
+                    <!-- Les actions possibles seront générées ici par JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div class="player-zone">
+            <div class="player" id="player1">
+                <div class="player-title player1-title">JOUEUR 1 <span class="player-score"></span></div>
+                <div class="player-hand" id="player1-hand">
+                    Main: Aucune carte
+                </div>
+                <div class="player-camels" id="player1-camels">
+                    Chameaux: 0
+                </div>
+                <div class="player-tokens" id="player1-tokens">
+                    Jetons: Aucun
+                </div>
+            </div>
+
+            <div class="player" id="player2">
+                <div class="player-title player2-title">JOUEUR 2 <span class="player-score"></span></div>
+                <div class="player-hand" id="player2-hand">
+                    Main: Aucune carte
+                </div>
+                <div class="player-camels" id="player2-camels">
+                    Chameaux: 0
+                </div>
+                <div class="player-tokens" id="player2-tokens">
+                    Jetons: Aucun
+                </div>
+            </div>
+        </div>
+
+        <div class="tokens-zone">
+            <div class="tokens-title">JETONS DISPONIBLES</div>
+            <div class="token-piles" id="token-piles">
+                <!-- Les piles de jetons seront générées ici par JavaScript -->
+            </div>
+        </div>
+
+
+        <div class="message-zone" id="message-zone">
+            Bienvenue à Jaipur! Cliquez sur une carte pour commencer.
+        </div>
+    </div>
+
+
+    <div class="modal" id="end-round-modal">
+        <div class="modal-content">
+            <h2>Fin de la Manche</h2>
+            <div id="round-results"></div>
+            <button class="action-button" id="next-round">Manche Suivante</button>
+        </div>
+    </div>
+
+    <div class="modal" id="end-game-modal">
+        <div class="modal-content">
+            <h2>Fin de la Partie</h2>
+            <div id="game-results"></div>
+            <button class="action-button" id="new-game">Nouvelle Partie</button>
+        </div>
+    </div>
+
+    <script src="jaipur-game.js"></script>
+    <script>
+        // La logique du jeu est maintenant chargée depuis jaipur-game.js
+        // et disponible globalement
+
+        // Initialisation de l'interface utilisateur
+        function initialiserInterface() {
+            // Initialiser le jeu avec la logique importée
+            initialiserJeu();
+
+            // Mettre à jour l'affichage
+            mettreAJourAffichage();
+        }
+
+        // Ces fonctions sont maintenant importées depuis jaipur-game.js
+
+        // Mettre à jour l'affichage du jeu
+        function mettreAJourAffichage() {
+            // Mettre à jour le marché
+            mettreAJourMarche();
+
+            // Mettre à jour les mains des joueurs
+            mettreAJourJoueurs();
+
+            // Mettre à jour les piles de jetons
+            mettreAJourJetons();
+        }
+
+        // Mettre à jour l'affichage du marché
+        function mettreAJourMarche() {
+            const marcheElement = document.getElementById("market-cards");
+            marcheElement.innerHTML = "";
+
+            etatJeu.marche.forEach((carte, index) => {
+                const carteElement = document.createElement("div");
+                carteElement.className = `card ${TYPES_MARCHANDISES[carte.type].classe}`;
+                carteElement.innerHTML = `${TYPES_MARCHANDISES[carte.type].nom}`;
+                carteElement.dataset.index = index;
+                carteElement.addEventListener("click", () => selectionnerCarteDuMarche(index));
+                marcheElement.appendChild(carteElement);
+            });
+
+            // Update possible actions
+            mettreAJourActionsPossibles();
+        }
+
+        // Mettre à jour l'affichage des joueurs
+        function mettreAJourJoueurs() {
+            for (let i = 0; i < 2; i++) {
+                const joueur = etatJeu.joueurs[i];
+                const joueurId = i + 1;
+                const playerElement = document.getElementById(`player${joueurId}`);
+
+                // Mettre en évidence le joueur actif
+                if (joueurId === etatJeu.joueurActif) {
+                    playerElement.classList.add('active');
+                } else {
+                    playerElement.classList.remove('active');
+                }
+
+                // Mettre à jour le score
+                document.querySelector(`#player${joueurId} .player-score`).textContent = joueur.sceaux ? ` (${joueur.sceaux} sceau${joueur.sceaux > 1 ? 'x' : ''} d'excellence)` : '';
+
+                // Mettre à jour la main
+                const mainElement = document.getElementById(`player${joueurId}-hand`);
+                if (joueur.main.length === 0) {
+                    mainElement.innerHTML = "Aucune carte dans la main";
+                } else {
+                    let mainHTML = "";
+                    const compteCarte = {};
+
+                    joueur.main.forEach(carte => {
+                        if (!compteCarte[carte.type]) {
+                            compteCarte[carte.type] = 0;
+                        }
+                        compteCarte[carte.type]++;
+                    });
+
+                    // Seul le joueur actif peut interagir avec ses cartes
+                    if (joueurId === etatJeu.joueurActif) {
+                        // Afficher les cartes individuellement
+                        mainHTML += "<div style='display: flex; flex-wrap: wrap;'>";
+
+                        // Créer un tableau de toutes les cartes (sauf les chameaux) et les trier dans l'ordre spécifié
+                        const cartes = [];
+                        joueur.main.forEach(carte => {
+                            // Ne pas inclure les chameaux dans la main
+                            if (carte.type !== "chameau") {
+                                cartes.push(carte.type);
+                            }
+                        });
+
+                        // Trier les cartes dans l'ordre: diamant, or, argent, tissu, epice, cuir
+                        const ordreCartes = ["diamant", "or", "argent", "tissu", "epice", "cuir"];
+                        cartes.sort((a, b) => {
+                            return ordreCartes.indexOf(a) - ordreCartes.indexOf(b);
+                        });
+
+                        // Create a container for the cards
+                        const cardsContainer = document.createElement("div");
+                        cardsContainer.style.display = "flex";
+                        cardsContainer.style.flexWrap = "wrap";
+
+                        // Afficher chaque carte individuellement
+                        cartes.forEach((type, idx) => {
+                            const cardDiv = document.createElement("div");
+                            cardDiv.className = `card ${TYPES_MARCHANDISES[type].classe}`;
+                            cardDiv.textContent = `${TYPES_MARCHANDISES[type].nom}`;
+                            cardDiv.dataset.type = type;
+                            cardDiv.dataset.index = idx;
+
+                            // Ajouter un gestionnaire d'événements pour la sélection
+                            cardDiv.addEventListener("click", () => {
+                                // Toggle selection state
+                                if (cardDiv.classList.contains("selected")) {
+                                    cardDiv.classList.remove("selected");
+                                } else {
+                                    cardDiv.classList.add("selected");
+                                }
+
+                                // Update possible actions
+                                mettreAJourActionsPossibles();
+                            });
+
+                            cardsContainer.appendChild(cardDiv);
+                        });
+
+                        // Clear the main element and append the cards container
+                        mainElement.innerHTML = "";
+                        mainElement.appendChild(cardsContainer);
+                    } else {
+                        // Afficher les cartes individuellement pour le joueur non actif
+                        // Create a container for the cards
+                        const cardsContainer = document.createElement("div");
+                        cardsContainer.style.display = "flex";
+                        cardsContainer.style.flexWrap = "wrap";
+
+                        // Créer un tableau de toutes les cartes (sauf les chameaux) et les trier dans l'ordre spécifié
+                        const cartes = [];
+                        joueur.main.forEach(carte => {
+                            // Ne pas inclure les chameaux dans la main
+                            if (carte.type !== "chameau") {
+                                cartes.push(carte.type);
+                            }
+                        });
+
+                        // Trier les cartes dans l'ordre: diamant, or, argent, tissu, epice, cuir
+                        const ordreCartes = ["diamant", "or", "argent", "tissu", "epice", "cuir"];
+                        cartes.sort((a, b) => {
+                            return ordreCartes.indexOf(a) - ordreCartes.indexOf(b);
+                        });
+
+                        // Afficher chaque carte individuellement
+                        cartes.forEach(type => {
+                            const cardDiv = document.createElement("div");
+                            cardDiv.className = `card ${TYPES_MARCHANDISES[type].classe}`;
+                            cardDiv.textContent = `${TYPES_MARCHANDISES[type].nom}`;
+                            cardsContainer.appendChild(cardDiv);
+                        });
+
+                        // Clear the main element and append the cards container
+                        mainElement.innerHTML = "";
+                        mainElement.appendChild(cardsContainer);
+                    }
+                }
+
+                // Mettre à jour les chameaux
+                const camelsElement = document.getElementById(`player${joueurId}-camels`);
+                camelsElement.innerHTML = ""; // Clear previous content
+
+                // Debug: Log the player's camel collection
+                console.log(`Player ${joueurId} camels:`, joueur.chameaux);
+                console.log(`Player ${joueurId} camels length:`, joueur.chameaux.length);
+                console.log(`Player ${joueurId} camels type:`, joueur.chameaux.map(c => c.type));
+
+                if (joueur.chameaux.length > 0) {
+                    // Create a container for camel cards
+                    const camelCardsContainer = document.createElement("div");
+                    camelCardsContainer.style.display = "flex";
+                    camelCardsContainer.style.flexWrap = "wrap";
+
+                    // Add individual camel cards
+                    console.log(`Creating ${joueur.chameaux.length} camel cards for player ${joueurId}`);
+                    for (let i = 0; i < joueur.chameaux.length; i++) {
+                        console.log(`Creating camel card ${i} for player ${joueurId}:`, joueur.chameaux[i]);
+                        const camelCard = document.createElement("div");
+                        camelCard.className = "card chameau";
+                        camelCard.textContent = "Chameau";
+                        camelCard.dataset.index = i;
+
+                        // Add click handler for active player
+                        if (joueurId === etatJeu.joueurActif) {
+                            camelCard.style.cursor = "pointer";
+                            camelCard.addEventListener("click", () => {
+                                // Toggle selection state
+                                if (camelCard.classList.contains("selected")) {
+                                    camelCard.classList.remove("selected");
+                                } else {
+                                    camelCard.classList.add("selected");
+                                }
+
+                                // Update possible actions
+                                mettreAJourActionsPossibles();
+                            });
+                        }
+
+                        camelCardsContainer.appendChild(camelCard);
+                    }
+
+                    camelsElement.appendChild(camelCardsContainer);
+                } else {
+                    camelsElement.innerHTML = "Aucun chameau";
+                }
+
+                // Mettre à jour les jetons
+                const jetonsElement = document.getElementById(`player${joueurId}-tokens`);
+                if (joueur.jetons.length === 0) {
+                    jetonsElement.innerHTML = "Aucun jeton amassé";
+                } else {
+                    let jetonsHTML = "";
+                    const compteJetons = {};
+
+                    joueur.jetons.forEach(jeton => {
+                        if (!compteJetons[jeton.type]) {
+                            compteJetons[jeton.type] = { total: 0, valeurs: [] };
+                        }
+                        compteJetons[jeton.type].total += jeton.valeur;
+                        compteJetons[jeton.type].valeurs.push(jeton.valeur);
+                    });
+
+                    for (const [type, data] of Object.entries(compteJetons)) {
+                        if (type.startsWith("bonus")) {
+                            jetonsHTML += `<span>Bonus ${type.substring(5)} (${data.total})</span> `;
+                        } else {
+                            jetonsHTML += `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom} (${data.total})</span> `;
+                        }
+                    }
+
+                    jetonsElement.innerHTML = jetonsHTML;
+                }
+            }
+        }
+
+        // Mettre à jour l'affichage des jetons
+        function mettreAJourJetons() {
+            const jetonsElement = document.getElementById("token-piles");
+            jetonsElement.innerHTML = "";
+
+            // Créer trois conteneurs pour les groupes de jetons
+            const preciousMetalsContainer = document.createElement("div");
+            preciousMetalsContainer.style.display = "flex";
+            preciousMetalsContainer.style.justifyContent = "space-around";
+            preciousMetalsContainer.style.width = "100%";
+            preciousMetalsContainer.style.marginBottom = "5px";
+
+            const goodsContainer = document.createElement("div");
+            goodsContainer.style.display = "flex";
+            goodsContainer.style.justifyContent = "space-around";
+            goodsContainer.style.width = "100%";
+            goodsContainer.style.marginBottom = "5px";
+
+            const bonusContainer = document.createElement("div");
+            bonusContainer.style.display = "flex";
+            bonusContainer.style.justifyContent = "space-around";
+            bonusContainer.style.width = "100%";
+
+            // Jetons de métaux précieux (diamant, or, argent)
+            for (const type of ["diamant", "or", "argent"]) {
+                const pileElement = document.createElement("div");
+                pileElement.className = "token-pile";
+
+                if (etatJeu.jetons[type].length > 0) {
+                    let jetonsHTML = `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom}: `;
+                    // Afficher toutes les valeurs des jetons disponibles
+                    jetonsHTML += etatJeu.jetons[type].join(' ');
+                    jetonsHTML += '</span>';
+                    pileElement.innerHTML = jetonsHTML;
+                } else {
+                    pileElement.innerHTML = `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom}: (Épuisé)</span>`;
+                }
+
+                preciousMetalsContainer.appendChild(pileElement);
+            }
+
+            // Jetons de marchandises (tissu, epice, cuir)
+            for (const type of ["tissu", "epice", "cuir"]) {
+                const pileElement = document.createElement("div");
+                pileElement.className = "token-pile";
+
+                if (etatJeu.jetons[type].length > 0) {
+                    let jetonsHTML = `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom}: `;
+                    // Afficher toutes les valeurs des jetons disponibles
+                    jetonsHTML += etatJeu.jetons[type].join(' ');
+                    jetonsHTML += '</span>';
+                    pileElement.innerHTML = jetonsHTML;
+                } else {
+                    pileElement.innerHTML = `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom}: (Épuisé)</span>`;
+                }
+
+                goodsContainer.appendChild(pileElement);
+            }
+
+            // Jetons bonus
+            for (const nbCartes of [3, 4, 5]) {
+                const pileElement = document.createElement("div");
+                pileElement.className = "token-pile";
+
+                if (etatJeu.jetons[`bonus${nbCartes}`].length > 0) {
+                    let jetonsHTML = `Bonus ${nbCartes}: `;
+                    // Afficher seulement le nombre de jetons bonus disponibles
+                    let nb = etatJeu.jetons[`bonus${nbCartes}`].length;
+                    jetonsHTML += nb + (nb > 1 ? ' jetons' : ' jeton');
+                    pileElement.innerHTML = jetonsHTML;
+                } else {
+                    pileElement.innerHTML = `Bonus ${nbCartes}: (Épuisé)`;
+                }
+
+                bonusContainer.appendChild(pileElement);
+            }
+
+            // Ajouter les conteneurs au conteneur principal
+            jetonsElement.appendChild(preciousMetalsContainer);
+            jetonsElement.appendChild(goodsContainer);
+            jetonsElement.appendChild(bonusContainer);
+        }
+
+        // Afficher un message dans la zone de message
+        function afficherMessage(message) {
+            const messageZone = document.getElementById("message-zone");
+            if (messageZone) {
+                messageZone.innerHTML = message;
+            }
+        }
+
+        // Sélectionner une carte du marché
+        function selectionnerCarteDuMarche(index) {
+            const cardElement = document.querySelector(`#market-cards [data-index="${index}"]`);
+
+            // Toggle selection state
+            if (cardElement.classList.contains("selected")) {
+                cardElement.classList.remove("selected");
+            } else {
+                cardElement.classList.add("selected");
+            }
+
+            // Update possible actions
+            mettreAJourActionsPossibles();
+        }
+
+        // Mettre à jour les actions possibles
+        function mettreAJourActionsPossibles() {
+            const actionsElement = document.getElementById("possible-actions");
+            actionsElement.innerHTML = "";
+
+            // Get selected market cards
+            const selectedMarketCards = document.querySelectorAll("#market-cards .card.selected");
+            const selectedMarketIndices = Array.from(selectedMarketCards).map(card => parseInt(card.dataset.index));
+
+            // Get selected player hand cards
+            const joueurActif = etatJeu.joueurActif;
+            const selectedPlayerCards = document.querySelectorAll(`#player${joueurActif}-hand .card.selected`);
+            const selectedPlayerTypes = Array.from(selectedPlayerCards).map(card => card.dataset.type);
+
+            // Get selected player camel cards
+            const selectedCamelCards = document.querySelectorAll(`#player${joueurActif}-camels .card.selected`);
+            const selectedCamelsCount = selectedCamelCards.length;
+
+            // Check if there are selected cards in the player's hand or camels
+            if (selectedPlayerCards.length > 0 || selectedCamelsCount > 0) {
+                // Add "Vendre" action if cards of the same type are selected
+                const uniqueTypes = new Set(selectedPlayerTypes);
+
+                // Display a message about what can be done with the selected cards
+                if (uniqueTypes.size > 1) {
+                    // Multiple types selected - show a message
+                    const messageDiv = document.createElement("div");
+                    messageDiv.className = "action-message";
+                    messageDiv.textContent = "Vous ne pouvez vendre que des cartes du même type. Sélectionnez aussi des cartes du marché pour échanger.";
+                    actionsElement.appendChild(messageDiv);
+                }
+
+                if (uniqueTypes.size === 1 && selectedCamelsCount === 0) {
+                    const type = selectedPlayerTypes[0];
+                    if (type !== "chameau") {
+                        // Compter combien de cartes de ce type le joueur a
+                        let compteCarte = 0;
+                        etatJeu.joueurs[joueurActif - 1].main.forEach(carte => {
+                            if (carte.type === type) compteCarte++;
+                        });
+
+                        const minVente = TYPES_MARCHANDISES[type].min_vente;
+
+                        // Vérifier si le joueur a assez de cartes pour vendre
+                        if (compteCarte >= minVente) {
+                            const sellButton = document.createElement("button");
+                            sellButton.className = "action-button";
+                            sellButton.textContent = "Vendre";
+                            sellButton.addEventListener("click", () => {
+                                // Vérifier si toutes les cartes du même type sont sélectionnées
+                                const toutesCartesSelectionnees = compteCarte === selectedPlayerCards.length;
+
+                                // Afficher un avertissement si toutes les cartes ne sont pas sélectionnées
+                                if (!toutesCartesSelectionnees) {
+                                    afficherMessage(`Attention: Vous n'avez pas sélectionné toutes vos cartes ${TYPES_MARCHANDISES[type].nom}. C'est possible mais rare comme vente.`);
+                                }
+
+                                // Effectuer la vente directement
+                                handleVendreCartes(type, selectedPlayerCards.length);
+
+                                // Clear selection after action
+                                document.querySelectorAll(`#player${joueurActif}-hand .card.selected`).forEach(card => {
+                                    card.classList.remove("selected");
+                                });
+                                mettreAJourActionsPossibles();
+                            });
+                            actionsElement.appendChild(sellButton);
+                        } else {
+                            // Afficher un message si le joueur n'a pas assez de cartes pour vendre
+                            const messageDiv = document.createElement("div");
+                            messageDiv.className = "action-message";
+                            messageDiv.textContent = `Vous devez avoir au moins ${minVente} cartes ${TYPES_MARCHANDISES[type].nom} pour vendre.`;
+                            actionsElement.appendChild(messageDiv);
+                        }
+                    }
+                }
+
+                // Add "Échanger" action if market cards are also selected
+                if (selectedMarketIndices.length > 0) {
+                    const exchangeButton = document.createElement("button");
+                    exchangeButton.className = "action-button";
+                    exchangeButton.textContent = "Échanger";
+                    exchangeButton.addEventListener("click", () => {
+                        // Perform the exchange directly
+                        handleEchangerMarchandises(selectedPlayerTypes, selectedMarketIndices, selectedCamelsCount);
+
+                        // Clear selection after action
+                        document.querySelectorAll(`#player${joueurActif}-hand .card.selected`).forEach(card => {
+                            card.classList.remove("selected");
+                        });
+                        document.querySelectorAll(`#player${joueurActif}-camels .card.selected`).forEach(card => {
+                            card.classList.remove("selected");
+                        });
+                        document.querySelectorAll("#market-cards .card.selected").forEach(card => {
+                            card.classList.remove("selected");
+                        });
+                        mettreAJourActionsPossibles();
+                    });
+                    actionsElement.appendChild(exchangeButton);
+                }
+            }
+            // Check if there are selected cards in the market
+            else if (selectedMarketCards.length > 0) {
+                // Check if any selected card is a camel
+                const hasCamel = Array.from(selectedMarketCards).some(card => {
+                    const index = parseInt(card.dataset.index);
+                    return etatJeu.marche[index].type === "chameau";
+                });
+
+                // Check if any selected card is not a camel (i.e., a good)
+                const hasGood = Array.from(selectedMarketCards).some(card => {
+                    const index = parseInt(card.dataset.index);
+                    return etatJeu.marche[index].type !== "chameau";
+                });
+
+                // Add "Prendre tous les chameaux" action if only camels are selected
+                if (hasCamel && !hasGood) {
+                    const takeCamelsButton = document.createElement("button");
+                    takeCamelsButton.className = "action-button";
+                    takeCamelsButton.textContent = "Prendre tous les chameaux";
+                    takeCamelsButton.addEventListener("click", () => {
+                        handlePrendreTousLesChameaux();
+                        // Clear selection after action
+                        document.querySelectorAll("#market-cards .card.selected").forEach(card => {
+                            card.classList.remove("selected");
+                        });
+                        mettreAJourActionsPossibles();
+                    });
+                    actionsElement.appendChild(takeCamelsButton);
+                }
+                // Add "Prendre 1 marchandise" action if only one card is selected and it's not a camel
+                else if (selectedMarketCards.length === 1) {
+                    const takeButton = document.createElement("button");
+                    takeButton.className = "action-button";
+                    takeButton.textContent = "Prendre 1 marchandise";
+                    takeButton.addEventListener("click", () => {
+                        handlePrendreCarteDuMarche(selectedMarketIndices[0]);
+                        // Clear selection after action
+                        document.querySelectorAll("#market-cards .card.selected").forEach(card => {
+                            card.classList.remove("selected");
+                        });
+                        mettreAJourActionsPossibles();
+                    });
+                    actionsElement.appendChild(takeButton);
+                }
+
+                // Add "Échanger des marchandises" action if multiple cards are selected and none are camels
+                const hasCamelsInSelection = Array.from(selectedMarketCards).some(card => {
+                    const index = parseInt(card.dataset.index);
+                    return etatJeu.marche[index].type === "chameau";
+                });
+
+                if (selectedMarketCards.length > 1 && !hasCamelsInSelection) {
+                    const messageDiv = document.createElement("div");
+                    messageDiv.className = "action-message";
+                    messageDiv.textContent = "Sélectionnez aussi des cartes de votre main ou des chameaux pour échanger.";
+                    actionsElement.appendChild(messageDiv);
+                }
+            } else {
+                // No cards selected
+                actionsElement.innerHTML = "<p>Sélectionnez des cartes du marché ou de votre main</p>";
+            }
+        }
+
+        // Prendre une carte du marché (utilise la logique du jeu importée)
+        function handlePrendreCarteDuMarche(index) {
+            const result = prendreCarteDuMarche(index);
+
+            if (result.success) {
+                afficherMessage(result.message);
+
+                // Mettre à jour l'affichage
+                mettreAJourAffichage();
+
+                return true;
+            } else {
+                afficherMessage(result.message);
+                return false;
+            }
+        }
+
+        // Prendre tous les chameaux du marché (utilise la logique du jeu importée)
+        function handlePrendreTousLesChameaux() {
+            const result = prendreTousLesChameaux();
+
+            if (result.success) {
+                afficherMessage(result.message);
+
+                // Mettre à jour l'affichage
+                mettreAJourAffichage();
+
+                return true;
+            } else {
+                afficherMessage(result.message);
+                return false;
+            }
+        }
+
+        // Vendre des cartes (utilise la logique du jeu importée)
+        function handleVendreCartes(type, quantite) {
+            const result = vendreCartes(type, quantite);
+
+            if (result.success) {
+                afficherMessage(result.message);
+
+                // Mettre à jour l'affichage
+                mettreAJourAffichage();
+
+                // Vérifier si la manche est terminée
+                if (result.mancheTerminee) {
+                    handleTerminerManche();
+                }
+
+                return true;
+            } else {
+                afficherMessage(result.message);
+                return false;
+            }
+        }
+
+        // Échanger des marchandises (utilise la logique du jeu importée)
+        function handleEchangerMarchandises(cartesJoueur, cartesMarche, nombreChameaux = 0) {
+            const result = echangerMarchandises(cartesJoueur, cartesMarche, nombreChameaux);
+
+            if (result.success) {
+                afficherMessage(result.message);
+
+                // Mettre à jour l'affichage
+                mettreAJourAffichage();
+
+                return true;
+            } else {
+                afficherMessage(result.message);
+                return false;
+            }
+        }
+
+        // Ces fonctions sont maintenant importées depuis jaipur-game.js
+
+        // Terminer la manche (utilise la logique du jeu importée)
+        function handleTerminerManche() {
+            // Appeler la fonction de la logique du jeu
+            const result = terminerManche();
+
+            // Afficher les résultats
+            const resultsElement = document.getElementById("round-results");
+            if (resultsElement) {
+                resultsElement.innerHTML = `
+                    <p>Joueur 1: ${etatJeu.joueurs[0].pointsManche} points</p>
+                    <p>Joueur 2: ${etatJeu.joueurs[1].pointsManche} points</p>
+                    ${result.bonusChameaux > 0 ? `<p>Joueur ${result.bonusChameaux} gagne 5 points pour avoir le plus de chameaux!</p>` : ''}
+                    ${result.gagnantManche > 0 ? `<p>Joueur ${result.gagnantManche} remporte la manche et gagne un sceau d'excellence!</p>` : `<p>Égalité! Aucun joueur ne gagne de sceau d'excellence.</p>`}
+                    <p>Sceaux d'excellence: Joueur 1: ${etatJeu.joueurs[0].sceaux}, Joueur 2: ${etatJeu.joueurs[1].sceaux}</p>
+                `;
+            }
+
+            // Afficher la modal de fin de manche
+            const endRoundModal = document.getElementById("end-round-modal");
+            if (endRoundModal) {
+                endRoundModal.style.display = "block";
+            }
+
+            if (result.partieTerminee) {
+                // Fin du jeu
+                handleTerminerJeu();
+            }
+        }
+
+        // Préparer la manche suivante (utilise la logique du jeu importée)
+        function handlePreparerMancheSuivante() {
+            // Appeler la fonction de la logique du jeu
+            preparerMancheSuivante();
+
+            // Mettre à jour l'affichage
+            mettreAJourAffichage();
+
+            // Fermer la modal
+            const endRoundModal = document.getElementById("end-round-modal");
+            if (endRoundModal) {
+                endRoundModal.style.display = "none";
+            }
+        }
+
+        // Terminer le jeu (utilise la logique du jeu importée)
+        function handleTerminerJeu() {
+            // Afficher les résultats
+            const resultsElement = document.getElementById("game-results");
+            if (resultsElement) {
+                resultsElement.innerHTML = `
+                    <p>Joueur 1: ${etatJeu.joueurs[0].sceaux} sceau${etatJeu.joueurs[0].sceaux > 1 ? 'x' : ''} d'excellence</p>
+                    <p>Joueur 2: ${etatJeu.joueurs[1].sceaux} sceau${etatJeu.joueurs[1].sceaux > 1 ? 'x' : ''} d'excellence</p>
+                    ${etatJeu.gagnantPartie > 0 ? `<p>Le Joueur ${etatJeu.gagnantPartie} remporte la partie!</p>` : `<p>Égalité!</p>`}
+                `;
+            }
+
+            // Afficher la modal de fin de jeu
+            const endRoundModal = document.getElementById("end-round-modal");
+            if (endRoundModal) {
+                endRoundModal.style.display = "none";
+            }
+
+            const endGameModal = document.getElementById("end-game-modal");
+            if (endGameModal) {
+                endGameModal.style.display = "block";
+            }
+        }
+
+        // Nouvelle partie (utilise la logique du jeu importée)
+        function handleNouvellePartie() {
+            // Appeler la fonction de la logique du jeu
+            nouvellePartie();
+
+            // Mettre à jour l'affichage
+            mettreAJourAffichage();
+
+            // Fermer la modal
+            const endGameModal = document.getElementById("end-game-modal");
+            if (endGameModal) {
+                endGameModal.style.display = "none";
+            }
+        }
+
+        // Gestionnaires d'événements
+        const nextRoundButton = document.getElementById("next-round");
+        if (nextRoundButton) {
+            nextRoundButton.addEventListener("click", () => {
+                handlePreparerMancheSuivante();
+            });
+        }
+
+        const newGameButton = document.getElementById("new-game");
+        if (newGameButton) {
+            newGameButton.addEventListener("click", () => {
+                handleNouvellePartie();
+            });
+        }
+
+        // Initialiser le jeu au chargement de la page
+        window.addEventListener('load', initialiserInterface);
+    </script>
+</body>
+</html>

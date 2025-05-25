@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaipur Console</title>
+    <style>
+        body {
+            background-color: #1E1E1E;
+            color: #D4D4D4;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items to the top */
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #console {
+            border: 2px solid #555;
+            padding: 20px;
+            width: 95%;
+            max-width: 1200px; /* Max width for larger screens */
+            background-color: #252526;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .section-header {
+            color: #4EC9B0; /* Teal/Cyan for headers */
+            border-bottom: 1px solid #4EC9B0;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #info-generale, #marche, .joueur-zone, #piles-jetons, #actions-joueur {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px dashed #3A3A3A;
+        }
+
+        /* Couleurs pour les marchandises (texte) */
+        .diamants { color: #569CD6; /* Bleu Brillant */ }
+        .or { color: #DCDCAA; /* Jaune Brillant */ }
+        .argent { color: #B5CEA8; /* Gris Clair/Blanc - Ajusté pour lisibilité */ }
+        .tissu { color: #C586C0; /* Magenta Brillant */ }
+        .epices { color: #CE9178; /* Orange/Rouge Clair */ }
+        .cuir { color: #D7BA7D; /* Marron Clair/Jaune Foncé */ }
+        .chameaux { color: #608B4E; /* Vert Clair */ }
+
+        /* Style pour les cartes au marché et dans la main */
+        .carte {
+            display: inline-block;
+            border: 1px solid #777;
+            padding: 8px 12px;
+            margin: 5px;
+            min-width: 100px; /* Ensure cards have some width */
+            text-align: center;
+            cursor: pointer; /* Indicate they are clickable */
+            background-color: #333; /* Darker background for cards */
+        }
+        .carte:hover {
+            border-color: #FFF;
+            background-color: #444;
+        }
+
+        #marche-cartes .carte {
+            margin-right: 10px;
+        }
+
+        .joueur-main .carte {
+            margin-right: 5px;
+        }
+
+
+        #actions-joueur button, .action-input button {
+            background-color: #007ACC; /* Bleu pour les boutons */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px 5px 5px 0;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #actions-joueur button:hover, .action-input button:hover {
+            background-color: #005A9E;
+        }
+
+        .action-input input[type="text"] {
+            background-color: #3C3C3C;
+            color: #D4D4D4;
+            border: 1px solid #555;
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            margin-right: 5px;
+        }
+
+        .jeton {
+            display: inline-block;
+            padding: 3px 6px;
+            margin: 2px;
+            border-radius: 50%; /* Make tokens circular */
+            font-size: 0.9em;
+            min-width: 20px; /* Minimum width for circular tokens */
+            text-align: center;
+            border: 1px solid; /* Border to define the circle */
+        }
+
+        /* Specific token styles - using background for tokens might be better if text color is fixed */
+        .jeton.diamants { background-color: #569CD6; color: #000; border-color: #569CD6; }
+        .jeton.or { background-color: #DCDCAA; color: #000; border-color: #DCDCAA;}
+        .jeton.argent { background-color: #B5CEA8; color: #000; border-color: #B5CEA8;}
+        .jeton.tissu { background-color: #C586C0; color: #000; border-color: #C586C0;}
+        .jeton.epices { background-color: #CE9178; color: #000; border-color: #CE9178;}
+        .jeton.cuir { background-color: #D7BA7D; color: #000; border-color: #D7BA7D;}
+
+        .jeton-bonus {
+            padding: 3px 6px;
+            margin: 2px;
+            font-size: 0.9em;
+            border: 1px solid;
+        }
+        .bonus-3 { background-color: #A52A2A; color: white; border-color: #A52A2A; } /* Brown */
+        .bonus-4 { background-color: #8A2BE2; color: white; border-color: #8A2BE2; } /* BlueViolet */
+        .bonus-5 { background-color: #FF4500; color: white; border-color: #FF4500; } /* OrangeRed */
+
+
+        #log-messages {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px dashed #3A3A3A;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #1E1E1E;
+        }
+        #log-messages p {
+            margin: 0 0 5px 0;
+            font-size: 0.9em;
+        }
+
+        /* Flexbox for layout */
+        .joueurs-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px; /* Space between player zones */
+        }
+        .joueur-zone {
+            flex: 1; /* Each player zone takes equal space */
+        }
+
+    </style>
+</head>
+<body>
+    <div id="console">
+        <div id="info-generale">
+            <div class="section-header">Informations Générales</div>
+            <p>Manche : <span id="manche-actuelle">1</span> / <span id="manches-max">2</span></p>
+            <p>Au tour du Joueur : <span id="joueur-courant">1</span></p>
+            <p>Cartes dans la pioche : <span id="pioche-taille">0</span></p>
+        </div>
+
+        <div id="marche">
+            <div class="section-header">Marché</div>
+            <div id="marche-cartes">
+                <!-- Les cartes du marché seront injectées ici par JS -->
+                <!-- Exemple: <div class="carte diamants">(1) DIAMANTS</div> -->
+            </div>
+        </div>
+
+        <div class="joueurs-container">
+            <div id="joueur1-zone" class="joueur-zone">
+                <div class="section-header">Joueur 1 - Score: <span id="joueur1-score">0</span></div>
+                <div>Main : <div id="joueur1-main" class="joueur-main"></div></div>
+                <div>Chameaux : <span id="joueur1-chameaux" class="chameaux">0</span></div>
+                <div>Jetons Acquis : <div id="joueur1-jetons"></div></div>
+            </div>
+
+            <div id="joueur2-zone" class="joueur-zone">
+                <div class="section-header">Joueur 2 - Score: <span id="joueur2-score">0</span></div>
+                <div>Main : <div id="joueur2-main" class="joueur-main"></div></div>
+                <div>Chameaux : <span id="joueur2-chameaux" class="chameaux">0</span></div>
+                <div>Jetons Acquis : <div id="joueur2-jetons"></div></div>
+            </div>
+        </div>
+
+        <div id="piles-jetons">
+            <div class="section-header">Piles de Jetons</div>
+            <div id="jetons-disponibles">
+                <!-- Les jetons disponibles seront injectés ici par JS -->
+                <!-- Exemple: DIAMANTS: (<span class="diamants">7pts</span> / 5 restants) -->
+            </div>
+            <div id="jetons-bonus-disponibles">
+                <!-- Jetons bonus -->
+            </div>
+        </div>
+
+        <div id="actions-joueur">
+            <div class="section-header">Actions Possibles</div>
+            <div id="actions-buttons">
+                <!-- Les boutons d'action seront injectés ici par JS ou définis statiquement -->
+                <button id="action-prendre-un">1. Prendre 1 Marchandise</button>
+                <button id="action-prendre-chameaux">2. Prendre tous les Chameaux</button>
+                <button id="action-vendre">3. Vendre des Cartes</button>
+                <button id="action-echanger">4. Échanger des Marchandises</button>
+            </div>
+            <div id="action-details" class="action-input" style="margin-top:10px;">
+                 <!-- Pour les entrées utilisateur, ex: sélection de cartes -->
+            </div>
+        </div>
+
+        <div id="log-messages">
+            <div class="section-header">Log du Jeu</div>
+            <!-- Les messages du jeu seront ajoutés ici -->
+        </div>
+
+    </div>
+
+    <script>
+        // Le code JavaScript du jeu ira ici
+
+        // --- CONSTANTES ET CONFIGURATION ---
+        const NOMS_MARCHANDISES = {
+            DIAMANTS: "Diamants",
+            OR: "Or",
+            ARGENT: "Argent",
+            TISSU: "Tissu",
+            EPICES: "Épices",
+            CUIR: "Cuir",
+            CHAMEAUX: "Chameaux"
+        };
+
+        const COULEURS_CSS = {
+            DIAMANTS: "diamants",
+            OR: "or",
+            ARGENT: "argent",
+            TISSU: "tissu",
+            EPICES: "epices",
+            CUIR: "cuir",
+            CHAMEAUX: "chameaux"
+        };
+
+        const VALEUR_MARCHANDISES = { // Pour le tri ou info, pas pour la vente directe
+            DIAMANTS: 7, OR: 6, ARGENT: 5, TISSU: 3, EPICES: 3, CUIR: 1, CHAMEAUX: 0
+        };
+        
+        const JETONS_MARCHANDISES_VALEURS = {
+            DIAMANTS: [7, 7, 5, 5, 5],
+            OR: [6, 6, 5, 5, 5],
+            ARGENT: [5, 5, 5, 5, 5],
+            TISSU: [5, 3, 3, 2, 2, 1, 1],
+            EPICES: [5, 3, 3, 2, 2, 1, 1],
+            CUIR: [4, 3, 2, 1, 1, 1, 1, 1, 1]
+        };
+
+        const JETONS_BONUS = {
+            3: [3, 3, 2, 2, 1, 1], // Valeurs pour 3 cartes vendues
+            4: [6, 5, 4, 4],    // Valeurs pour 4 cartes vendues
+            5: [10, 9, 8, 8]     // Valeurs pour 5 cartes vendues ou plus
+        };
+        const JETONS_CHAMEAUX_VALEUR = 5; // Sceau d'excellence pour le joueur avec le plus de chameaux
+
+        const LIMITE_MAIN = 7;
+        const NB_MANCHES_POUR_GAGNER = 2;
+
+        // --- ÉTAT DU JEU ---
+        let etatJeu = {
+            mancheCourante: 1,
+            joueurCourant: 1, // 1 ou 2
+            pioche: [],
+            marche: [],
+            joueurs: [
+                { id: 1, nom: "Joueur 1", main: [], chameaux: 0, jetons: [], scoreManche: 0, scorePartie: 0 },
+                { id: 2, nom: "Joueur 2", main: [], chameaux: 0, jetons: [], scoreManche: 0, scorePartie: 0 }
+            ],
+            pilesJetons: {}, // Sera initialisé avec les valeurs de JETONS_MARCHANDISES_VALEURS
+            pilesJetonsBonus: {}, // Sera initialisé avec JETONS_BONUS
+            jetonChameauDisponible: true,
+            logMessages: []
+        };
+
+        // --- ÉLÉMENTS DU DOM ---
+        // Info Générale
+        const mancheActuelleEl = document.getElementById('manche-actuelle');
+        const joueurCourantEl = document.getElementById('joueur-courant');
+        const piocheTailleEl = document.getElementById('pioche-taille');
+        // Marché
+        const marcheCartesEl = document.getElementById('marche-cartes');
+        // Joueur 1
+        const joueur1ScoreEl = document.getElementById('joueur1-score');
+        const joueur1MainEl = document.getElementById('joueur1-main');
+        const joueur1ChameauxEl = document.getElementById('joueur1-chameaux');
+        const joueur1JetonsEl = document.getElementById('joueur1-jetons');
+        // Joueur 2
+        const joueur2ScoreEl = document.getElementById('joueur2-score');
+        const joueur2MainEl = document.getElementById('joueur2-main');
+        const joueur2ChameauxEl = document.getElementById('joueur2-chameaux');
+        const joueur2JetonsEl = document.getElementById('joueur2-jetons');
+        // Piles Jetons
+        const jetonsDisponiblesEl = document.getElementById('jetons-disponibles');
+        const jetonsBonusDisponiblesEl = document.getElementById('jetons-bonus-disponibles');
+        // Actions
+        const actionsButtonsEl = document.getElementById('actions-buttons');
+        const actionDetailsEl = document.getElementById('action-details');
+        const btnPrendreUn = document.getElementById('action-prendre-un');
+        const btnPrendreChameaux = document.getElementById('action-prendre-chameaux');
+        const btnVendre = document.getElementById('action-vendre');
+        const btnEchanger = document.getElementById('action-echanger');
+        // Log
+        const logMessagesEl = document.getElementById('log-messages');
+
+
+        // --- FONCTIONS UTILITAIRES ---
+        function creerCarte(type) {
+            return {
+                type: type, // ex: NOMS_MARCHANDISES.DIAMANTS
+                nom: NOMS_MARCHANDISES[type],
+                couleurCss: COULEURS_CSS[type]
+            };
+        }
+
+        function melanger(tableau) {
+            for (let i = tableau.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tableau[i], tableau[j]] = [tableau[j], tableau[i]];
+            }
+        }
+        
+        function ajouterLog(message) {
+            etatJeu.logMessages.unshift(message); // Ajoute au début pour voir les plus récents en premier
+            if (etatJeu.logMessages.length > 20) { // Limite le nombre de messages
+                etatJeu.logMessages.pop();
+            }
+            afficherLog();
+        }
+
+        // --- INITIALISATION DU JEU ---
+        function initialiserPioche() {
+            const pioche = [];
+            // Cartes Marchandises
+            Object.keys(NOMS_MARCHANDISES).forEach(type => {
+                if (type === "CHAMEAUX") return; // Chameaux ajoutés séparément
+                let nbCartes = 0;
+                switch(type) {
+                    case "DIAMANTS": nbCartes = 6; break;
+                    case "OR": nbCartes = 6; break;
+                    case "ARGENT": nbCartes = 6; break;
+                    case "TISSU": nbCartes = 8; break;
+                    case "EPICES": nbCartes = 8; break;
+                    case "CUIR": nbCartes = 10; break;
+                }
+                for (let i = 0; i < nbCartes; i++) {
+                    pioche.push(creerCarte(type));
+                }
+            });
+            // Cartes Chameaux
+            for (let i = 0; i < 11; i++) { // 8 dans la pioche + 3 au départ
+                pioche.push(creerCarte("CHAMEAUX"));
+            }
+            melanger(pioche);
+            return pioche;
+        }
+
+        function initialiserJetons() {
+            etatJeu.pilesJetons = {};
+            for (const typeMarchandise in JETONS_MARCHANDISES_VALEURS) {
+                etatJeu.pilesJetons[typeMarchandise] = [...JETONS_MARCHANDISES_VALEURS[typeMarchandise]];
+            }
+
+            etatJeu.pilesJetonsBonus = {};
+            for (const typeBonus in JETONS_BONUS) {
+                etatJeu.pilesJetonsBonus[typeBonus] = [...JETONS_BONUS[typeBonus]];
+            }
+            etatJeu.jetonChameauDisponible = true;
+        }
+        
+        function demarrerManche() {
+            etatJeu.pioche = initialiserPioche();
+            initialiserJetons();
+
+            // Réinitialiser joueurs pour la manche
+            etatJeu.joueurs.forEach(j => {
+                j.main = [];
+                j.chameaux = 0;
+                j.jetons = [];
+                j.scoreManche = 0; // Score de la manche, scorePartie est conservé
+            });
+            
+            // Distribuer 5 cartes à chaque joueur
+            for (let i = 0; i < 5; i++) {
+                etatJeu.joueurs.forEach(j => piocherPourJoueur(j));
+            }
+
+            // Initialiser le marché
+            etatJeu.marche = [];
+            // Placer 3 chameaux au marché au début si possible
+            let chameauxPlaces = 0;
+            const piocheTemp = [];
+            while(etatJeu.pioche.length > 0 && chameauxPlaces < 3) {
+                const carte = etatJeu.pioche.pop();
+                if (carte.type === "CHAMEAUX") {
+                    etatJeu.marche.push(carte);
+                    chameauxPlaces++;
+                } else {
+                    piocheTemp.push(carte); // Garder les non-chameaux temporairement
+                }
+            }
+            // Remettre les non-chameaux dans la pioche et remélanger
+            etatJeu.pioche.push(...piocheTemp);
+            melanger(etatJeu.pioche);
+
+
+            // Compléter le marché jusqu'à 5 cartes
+            while (etatJeu.marche.length < 5 && etatJeu.pioche.length > 0) {
+                etatJeu.marche.push(etatJeu.pioche.pop());
+            }
+            
+            // S'assurer que le marché n'a pas que des chameaux au début (règle rare mais possible)
+            // ou trop de cartes identiques de valeur. Simplification: on s'assure qu'il y a au moins une non-chameau si possible.
+            const nonChameauxMarche = etatJeu.marche.filter(c => c.type !== "CHAMEAUX").length;
+            if (nonChameauxMarche === 0 && etatJeu.pioche.some(c => c.type !== "CHAMEAUX")) {
+                // Cas rare: défausser marché, remettre 5 cartes. Pour simplifier, on va juste continuer.
+                // Une implémentation complète gérerait le remplacement du marché si toutes les cartes sont identiques ou que des chameaux.
+            }
+
+
+            etatJeu.joueurCourant = Math.random() < 0.5 ? 1 : 2; // Qui commence la manche
+            ajouterLog(`Début de la manche ${etatJeu.mancheCourante}. Joueur ${etatJeu.joueurCourant} commence.`);
+            mettreAJourAffichageComplet();
+        }
+
+        function piocherPourJoueur(joueur) {
+            if (etatJeu.pioche.length > 0) {
+                const cartePiochee = etatJeu.pioche.pop();
+                if (cartePiochee.type === "CHAMEAUX") {
+                    joueur.chameaux++;
+                } else {
+                    if (joueur.main.length < LIMITE_MAIN) {
+                        joueur.main.push(cartePiochee);
+                    } else {
+                        // Normalement, on ne pioche pas directement dans la main si elle est pleine
+                        // sauf à l'initialisation. Si cela arrive en cours de jeu, la carte est "perdue" ou
+                        // une règle de défausse devrait s'appliquer. Pour l'init, on suppose que c'est ok.
+                        // En jeu, le joueur doit faire de la place avant.
+                        // Pour l'instant, on la remet dans la pioche si la main est pleine (ne devrait pas arriver à l'init)
+                         etatJeu.pioche.unshift(cartePiochee); // Remettre au dessus pour ne pas la perdre
+                         ajouterLog(`Main du ${joueur.nom} pleine, carte ${cartePiochee.nom} non piochée.`);
+                    }
+                }
+            }
+        }
+
+
+        // --- AFFICHAGE ---
+        function afficherInfoGenerale() {
+            mancheActuelleEl.textContent = `${etatJeu.mancheCourante} / ${NB_MANCHES_POUR_GAGNER}`;
+            joueurCourantEl.textContent = etatJeu.joueurCourant;
+            piocheTailleEl.textContent = etatJeu.pioche.length;
+        }
+
+        function afficherMarche() {
+            marcheCartesEl.innerHTML = ''; // Vider le marché actuel
+            etatJeu.marche.forEach((carte, index) => {
+                const carteDiv = document.createElement('div');
+                carteDiv.classList.add('carte', carte.couleurCss);
+                carteDiv.textContent = `(${index + 1}) ${carte.nom}`;
+                carteDiv.dataset.index = index; // Pour identifier la carte cliquée
+                carteDiv.onclick = () => handleClickMarche(index);
+                marcheCartesEl.appendChild(carteDiv);
+            });
+        }
+        
+        function afficherMainsEtChameaux() {
+            etatJeu.joueurs.forEach(joueur => {
+                const mainEl = joueur.id === 1 ? joueur1MainEl : joueur2MainEl;
+                const chameauxEl = joueur.id === 1 ? joueur1ChameauxEl : joueur2ChameauxEl;
+                const scoreEl = joueur.id === 1 ? joueur1ScoreEl : joueur2ScoreEl; // Score de manche
+                const jetonsEl = joueur.id === 1 ? joueur1JetonsEl : joueur2JetonsEl;
+
+                mainEl.innerHTML = '';
+                joueur.main.forEach((carte, index) => {
+                    const carteDiv = document.createElement('div');
+                    carteDiv.classList.add('carte', carte.couleurCss);
+                    carteDiv.textContent = carte.nom;
+                    carteDiv.dataset.index = index; // Utile pour la sélection de vente/échange
+                    // Ajouter un onclick si on veut sélectionner les cartes de la main
+                    carteDiv.onclick = () => handleClickMain(joueur.id, index);
+                    mainEl.appendChild(carteDiv);
+                });
+
+                chameauxEl.textContent = joueur.chameaux;
+                scoreEl.textContent = joueur.scoreManche; // Afficher le score de la manche en cours
+
+                // Afficher les jetons acquis
+                jetonsEl.innerHTML = '';
+                const jetonsGroupes = {};
+                joueur.jetons.forEach(jeton => {
+                    if (jeton.type === 'bonus') {
+                        const bonusKey = `bonus-${jeton.valeur}`;
+                        jetonsGroupes[bonusKey] = (jetonsGroupes[bonusKey] || 0) + 1;
+                    } else { // Marchandise
+                        jetonsGroupes[jeton.type] = (jetonsGroupes[jeton.type] || 0) + 1;
+                    }
+                });
+
+                for (const typeJeton in jetonsGroupes) {
+                    const span = document.createElement('span');
+                    if (typeJeton.startsWith('bonus-')) {
+                        const valeur = typeJeton.split('-')[1];
+                        span.classList.add('jeton-bonus', `bonus-${valeur}`);
+                        span.textContent = `Bonus ${valeur} (${jetonsGroupes[typeJeton]})`;
+                    } else {
+                        span.classList.add('jeton', COULEURS_CSS[typeJeton]);
+                        span.textContent = `${NOMS_MARCHANDISES[typeJeton]} (${jetonsGroupes[typeJeton]})`;
+                    }
+                    jetonsEl.appendChild(span);
+                    jetonsEl.appendChild(document.createTextNode(' ')); // Espace entre les jetons
+                }
+            });
+        }
+
+        function afficherPilesJetons() {
+            jetonsDisponiblesEl.innerHTML = '';
+            for (const typeMarchandise in etatJeu.pilesJetons) {
+                const pile = etatJeu.pilesJetons[typeMarchandise];
+                if (pile.length > 0) {
+                    const p = document.createElement('p');
+                    p.innerHTML = `<span class="${COULEURS_CSS[typeMarchandise]}">${NOMS_MARCHANDISES[typeMarchandise]}</span>: 
+                                   (<span class="${COULEURS_CSS[typeMarchandise]}">${pile[0]}pts</span> / ${pile.length} restants)`;
+                    jetonsDisponiblesEl.appendChild(p);
+                } else {
+                     const p = document.createElement('p');
+                    p.innerHTML = `<span class="${COULEURS_CSS[typeMarchandise]}">${NOMS_MARCHANDISES[typeMarchandise]}</span>: Épuisé`;
+                    jetonsDisponiblesEl.appendChild(p);
+                }
+            }
+
+            jetonsBonusDisponiblesEl.innerHTML = 'Jetons Bonus: ';
+            for (const typeBonus in etatJeu.pilesJetonsBonus) { // 3, 4, 5
+                const pile = etatJeu.pilesJetonsBonus[typeBonus];
+                if (pile.length > 0) {
+                    const span = document.createElement('span');
+                    span.classList.add('jeton-bonus', `bonus-${typeBonus}`);
+                    span.textContent = `x${typeBonus} (${pile[0]}pts / ${pile.length} restants)`;
+                    jetonsBonusDisponiblesEl.appendChild(span);
+                    jetonsBonusDisponiblesEl.appendChild(document.createTextNode(' '));
+                }
+            }
+            if(etatJeu.jetonChameauDisponible){
+                const span = document.createElement('span');
+                span.classList.add('jeton-bonus', 'chameaux'); // Style à définir pour jeton chameau
+                span.textContent = `Chameaux (${JETONS_CHAMEAUX_VALEUR}pts / 1 restant)`;
+                jetonsBonusDisponiblesEl.appendChild(span);
+            }
+        }
+        
+        function afficherLog() {
+            logMessagesEl.innerHTML = '<div class="section-header">Log du Jeu</div>'; // Réinitialise avec le header
+            etatJeu.logMessages.forEach(msg => {
+                const p = document.createElement('p');
+                p.textContent = msg;
+                logMessagesEl.appendChild(p);
+            });
+        }
+
+        function mettreAJourAffichageComplet() {
+            afficherInfoGenerale();
+            afficherMarche();
+            afficherMainsEtChameaux();
+            afficherPilesJetons();
+            afficherLog(); // Afficher les logs après les autres mises à jour
+            // Mettre à jour la disponibilité des boutons d'action
+            updateActionButtonsState();
+        }
+        
+        function updateActionButtonsState() {
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            
+            // 1. Prendre 1 Marchandise
+            // Possible s'il y a des marchandises non-chameau au marché ET que la main n'est pas pleine (sauf si on prend un chameau)
+            const marchandisesAuMarche = etatJeu.marche.some(c => c.type !== "CHAMEAUX");
+            btnPrendreUn.disabled = !(marchandisesAuMarche && joueurActif.main.length < LIMITE_MAIN);
+            // Si le marché ne contient que des chameaux, cette action n'est pas directement "prendre une marchandise"
+            // mais devient "prendre tous les chameaux". On va gérer ça dans la logique de l'action.
+            // Pour l'instant, si que des chameaux, on désactive "Prendre 1 Marchandise".
+            if (etatJeu.marche.every(c => c.type === "CHAMEAUX")) {
+                btnPrendreUn.disabled = true;
+            }
+
+
+            // 2. Prendre tous les Chameaux
+            const chameauxAuMarche = etatJeu.marche.some(c => c.type === "CHAMEAUX");
+            btnPrendreChameaux.disabled = !chameauxAuMarche;
+
+            // 3. Vendre des Cartes
+            // Possible s'il y a des cartes vendables dans la main.
+            // Diamants, Or, Argent: min 2 pour vendre. Autres: min 1.
+            let peutVendre = false;
+            const typesEnMain = new Set(joueurActif.main.map(c => c.type));
+            for (const type of typesEnMain) {
+                const count = joueurActif.main.filter(c => c.type === type).length;
+                if (type === "DIAMANTS" || type === "OR" || type === "ARGENT") {
+                    if (count >= 2) { peutVendre = true; break; }
+                } else if (type === "TISSU" || type === "EPICES" || type === "CUIR") {
+                    if (count >= 1) { peutVendre = true; break; }
+                }
+            }
+            btnVendre.disabled = !peutVendre;
+
+            // 4. Échanger des Marchandises
+            // Possible s'il y a au moins 2 marchandises au marché ET le joueur a au moins 2 cartes (marchandises ou chameaux) à échanger.
+            // Et le joueur doit pouvoir prendre autant de cartes qu'il en donne.
+            const nbCartesEchangeablesJoueur = joueurActif.main.length + joueurActif.chameaux;
+            // On doit échanger au moins 2 cartes.
+            // Le joueur doit avoir au moins 2 cartes (main + chameaux)
+            // Le marché doit avoir au moins 2 cartes (pour que l'échange soit significatif)
+            btnEchanger.disabled = !(nbCartesEchangeablesJoueur >= 2 && etatJeu.marche.length >=2 && joueurActif.main.length < LIMITE_MAIN);
+             // Simplification: on doit avoir de la place dans la main pour les cartes du marché.
+             // Un échange implique de prendre N cartes du marché et donner N cartes (main/chameaux).
+             // Si on donne X de la main et Y chameaux, on prend X+Y cartes du marché.
+             // La main ne doit pas déborder APRES l'échange.
+             // (cartes en main - X) + (X+Y) <= LIMITE_MAIN  => cartes en main + Y <= LIMITE_MAIN
+             // Cette condition est complexe à vérifier ici, on la vérifiera dans la fonction d'échange.
+             // Pour l'instant, on permet si on a des cartes à donner et le marché a des cartes.
+             // Et on ne peut pas échanger que des chameaux pour que des chameaux.
+             const peutPrendreNonChameauDuMarche = etatJeu.marche.some(c => c.type !== "CHAMEAUX");
+             const peutDonnerNonChameau = joueurActif.main.length > 0;
+             if (!peutPrendreNonChameauDuMarche && !peutDonnerNonChameau && joueurActif.chameaux > 0 && etatJeu.marche.every(c => c.type === "CHAMEAUX")) {
+                 btnEchanger.disabled = true; // Interdire chameaux pour chameaux
+             }
+        }
+
+
+        // --- LOGIQUE D'ACTIONS ---
+        // Variables globales pour gérer la sélection multi-étapes
+        let actionEnCours = null; // 'vendre', 'echanger-choix-main', 'echanger-choix-marche'
+        let cartesSelectionneesMain = []; // indexes
+        let cartesSelectionneesMarche = []; // indexes
+
+        function reinitialiserSelectionAction() {
+            actionEnCours = null;
+            cartesSelectionneesMain = [];
+            cartesSelectionneesMarche = [];
+            actionDetailsEl.innerHTML = ''; // Nettoyer les détails de l'action
+        }
+        
+        function handleClickMarche(indexCarteMarche) {
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            const carteCliquee = etatJeu.marche[indexCarteMarche];
+
+            if (actionEnCours === 'prendre-un') {
+                if (carteCliquee.type === "CHAMEAUX") {
+                    ajouterLog("Action invalide: Pour prendre les chameaux, utilisez le bouton 'Prendre tous les Chameaux'. Sélectionnez une marchandise.");
+                    return;
+                }
+                if (joueurActif.main.length >= LIMITE_MAIN) {
+                    ajouterLog("Votre main est pleine. Vous ne pouvez pas prendre plus de marchandises.");
+                    reinitialiserSelectionAction();
+                    mettreAJourAffichageComplet();
+                    return;
+                }
+
+                // Prendre la marchandise
+                joueurActif.main.push(etatJeu.marche.splice(indexCarteMarche, 1)[0]);
+                ajouterLog(`${joueurActif.nom} prend ${carteCliquee.nom} du marché.`);
+                
+                // Remplir le marché depuis la pioche
+                if (etatJeu.pioche.length > 0) {
+                    etatJeu.marche.push(etatJeu.pioche.pop());
+                }
+                
+                reinitialiserSelectionAction();
+                passerAuJoueurSuivant();
+
+            } else if (actionEnCours === 'echanger-choix-marche') {
+                // Logique de sélection pour l'échange (partie marché)
+                const idxDansSelection = cartesSelectionneesMarche.indexOf(indexCarteMarche);
+                if (idxDansSelection > -1) {
+                    cartesSelectionneesMarche.splice(idxDansSelection, 1); // Déselectionner
+                } else {
+                    cartesSelectionneesMarche.push(indexCarteMarche); // Sélectionner
+                }
+                afficherMessageAction(`Échange: Sélectionnez les cartes du marché à PRENDRE (${cartesSelectionneesMarche.length} sélectionnée(s)). Cliquez sur 'Valider Échange'.`);
+                // Mettre à jour l'affichage pour montrer la sélection (ex: bordure)
+                mettreAJourAffichageComplet(); // Pourrait être optimisé pour ne pas tout redessiner
+                etatJeu.marche.forEach((carte, idx) => {
+                    if (cartesSelectionneesMarche.includes(idx)) {
+                        marcheCartesEl.children[idx].style.borderColor = 'yellow';
+                        marcheCartesEl.children[idx].style.borderWidth = '2px';
+                    }
+                });
+
+
+            } else {
+                ajouterLog("Sélectionnez d'abord une action (ex: 'Prendre 1 Marchandise').");
+            }
+        }
+
+        function handleClickMain(idJoueur, indexCarteMain) {
+            if (idJoueur !== etatJeu.joueurCourant) return; // Ne pas interagir avec la main de l'autre joueur
+
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            const carteCliquee = joueurActif.main[indexCarteMain];
+
+            if (actionEnCours === 'vendre') {
+                const idxDansSelection = cartesSelectionneesMain.indexOf(indexCarteMain);
+                if (idxDansSelection > -1) {
+                    cartesSelectionneesMain.splice(idxDansSelection, 1); // Déselectionner
+                } else {
+                    // Vérifier si la carte est du même type que les autres déjà sélectionnées (si > 0)
+                    if (cartesSelectionneesMain.length > 0) {
+                        const typePremiereSelection = joueurActif.main[cartesSelectionneesMain[0]].type;
+                        if (carteCliquee.type !== typePremiereSelection) {
+                            ajouterLog("Vous ne pouvez vendre que des cartes du même type de marchandise à la fois.");
+                            return;
+                        }
+                    }
+                    cartesSelectionneesMain.push(indexCarteMain); // Sélectionner
+                }
+                afficherMessageAction(`Vente: ${cartesSelectionneesMain.length} carte(s) de type ${cartesSelectionneesMain.length > 0 ? joueurActif.main[cartesSelectionneesMain[0]].nom : ''} sélectionnée(s). Cliquez sur 'Valider Vente'.`);
+                 // Mettre à jour l'affichage pour montrer la sélection
+                mettreAJourAffichageComplet();
+                const mainEl = joueurActif.id === 1 ? joueur1MainEl : joueur2MainEl;
+                cartesSelectionneesMain.forEach(idx => {
+                    mainEl.children[idx].style.borderColor = 'yellow';
+                    mainEl.children[idx].style.borderWidth = '2px';
+                });
+
+
+            } else if (actionEnCours === 'echanger-choix-main') {
+                // Logique de sélection pour l'échange (partie main/chameaux)
+                const idxDansSelection = cartesSelectionneesMain.indexOf(indexCarteMain);
+                if (idxDansSelection > -1) {
+                    cartesSelectionneesMain.splice(idxDansSelection, 1); // Déselectionner
+                } else {
+                    cartesSelectionneesMain.push(indexCarteMain); // Sélectionner
+                }
+                afficherMessageAction(`Échange: Sélectionnez les cartes de votre main à DONNER (${cartesSelectionneesMain.length} sélectionnée(s)). Indiquez les chameaux si besoin. Puis 'Suivant'.`);
+                mettreAJourAffichageComplet();
+                const mainEl = joueurActif.id === 1 ? joueur1MainEl : joueur2MainEl;
+                cartesSelectionneesMain.forEach(idx => {
+                    mainEl.children[idx].style.borderColor = 'yellow';
+                    mainEl.children[idx].style.borderWidth = '2px';
+                });
+            }
+        }
+        
+        function afficherMessageAction(message) {
+            actionDetailsEl.innerHTML = `<p>${message}</p>`;
+        }
+
+
+        // --- GESTION DES ACTIONS BOUTONS ---
+        btnPrendreUn.onclick = () => {
+            reinitialiserSelectionAction();
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            if (joueurActif.main.length >= LIMITE_MAIN) {
+                ajouterLog("Votre main est pleine. Vous devez vendre ou échanger des cartes.");
+                return;
+            }
+            if (etatJeu.marche.every(c => c.type === "CHAMEAUX")) {
+                ajouterLog("Il n'y a que des chameaux au marché. Utilisez 'Prendre tous les Chameaux'.");
+                return;
+            }
+            actionEnCours = 'prendre-un';
+            afficherMessageAction("Cliquez sur une carte marchandise du marché à prendre.");
+        };
+
+        btnPrendreChameaux.onclick = () => {
+            reinitialiserSelectionAction();
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            let chameauxPris = 0;
+
+            // Prendre tous les chameaux du marché
+            const marcheRestant = [];
+            etatJeu.marche.forEach(carte => {
+                if (carte.type === "CHAMEAUX") {
+                    joueurActif.chameaux++;
+                    chameauxPris++;
+                } else {
+                    marcheRestant.push(carte);
+                }
+            });
+            etatJeu.marche = marcheRestant;
+
+            if (chameauxPris === 0) {
+                ajouterLog("Aucun chameau à prendre sur le marché.");
+                return; // Ne pas passer le tour si aucune action n'a eu lieu
+            }
+            
+            ajouterLog(`${joueurActif.nom} prend ${chameauxPris} chameau(x) du marché.`);
+
+            // Remplir le marché depuis la pioche
+            while (etatJeu.marche.length < 5 && etatJeu.pioche.length > 0) {
+                etatJeu.marche.push(etatJeu.pioche.pop());
+            }
+            
+            passerAuJoueurSuivant();
+        };
+
+        btnVendre.onclick = () => {
+            reinitialiserSelectionAction();
+            actionEnCours = 'vendre';
+            
+            actionDetailsEl.innerHTML = `
+                <p>Cliquez sur les cartes de même type dans votre main que vous souhaitez vendre.</p>
+                <p>Types vendables : Diamants/Or/Argent (min 2), Tissu/Épices/Cuir (min 1).</p>
+                <button id="btn-valider-vente">Valider Vente</button>
+                <button id="btn-annuler-action">Annuler</button>
+            `;
+            document.getElementById('btn-valider-vente').onclick = executerVente;
+            document.getElementById('btn-annuler-action').onclick = () => {
+                reinitialiserSelectionAction();
+                mettreAJourAffichageComplet();
+                ajouterLog("Vente annulée.");
+            };
+        };
+        
+        function executerVente() {
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            if (cartesSelectionneesMain.length === 0) {
+                ajouterLog("Aucune carte sélectionnée pour la vente.");
+                reinitialiserSelectionAction();
+                mettreAJourAffichageComplet();
+                return;
+            }
+
+            // Trier les index pour les supprimer correctement
+            cartesSelectionneesMain.sort((a, b) => b - a); 
+            
+            const typeVendu = joueurActif.main[cartesSelectionneesMain[0]].type;
+            const nombreVendu = cartesSelectionneesMain.length;
+
+            // Vérifier la validité de la vente
+            let venteValide = false;
+            if (typeVendu === "DIAMANTS" || typeVendu === "OR" || typeVendu === "ARGENT") {
+                if (nombreVendu >= 2) venteValide = true;
+            } else if (typeVendu === "TISSU" || typeVendu === "EPICES" || typeVendu === "CUIR") {
+                if (nombreVendu >= 1) venteValide = true;
+            }
+
+            if (!venteValide) {
+                ajouterLog(`Vente invalide: ${nombreVendu} ${NOMS_MARCHANDISES[typeVendu]}. Minimum requis non atteint.`);
+                reinitialiserSelectionAction();
+                mettreAJourAffichageComplet();
+                return;
+            }
+
+            // Retirer les cartes de la main et prendre les jetons
+            let jetonsGagnesCeTour = [];
+            for (let i = 0; i < nombreVendu; i++) {
+                // Prendre un jeton marchandise
+                if (etatJeu.pilesJetons[typeVendu] && etatJeu.pilesJetons[typeVendu].length > 0) {
+                    const valeurJeton = etatJeu.pilesJetons[typeVendu].shift(); // Prend le premier (plus haute valeur)
+                    const jeton = { type: typeVendu, valeur: valeurJeton };
+                    joueurActif.jetons.push(jeton);
+                    joueurActif.scoreManche += valeurJeton;
+                    jetonsGagnesCeTour.push(jeton);
+                } else {
+                    ajouterLog(`Plus de jetons ${NOMS_MARCHANDISES[typeVendu]} disponibles !`);
+                }
+            }
+            
+            ajouterLog(`${joueurActif.nom} vend ${nombreVendu} x ${NOMS_MARCHANDISES[typeVendu]}.`);
+            if(jetonsGagnesCeTour.length > 0) {
+                 ajouterLog(`Jetons gagnés: ${jetonsGagnesCeTour.map(j => `${j.valeur}pts`).join(', ')}`);
+            }
+
+
+            // Gérer les jetons bonus
+            let jetonBonusGagne = null;
+            if (nombreVendu >= 3) {
+                let typeBonusPile = nombreVendu >= 5 ? '5' : (nombreVendu === 4 ? '4' : '3');
+                if (etatJeu.pilesJetonsBonus[typeBonusPile] && etatJeu.pilesJetonsBonus[typeBonusPile].length > 0) {
+                    const valeurBonus = etatJeu.pilesJetonsBonus[typeBonusPile].shift();
+                    jetonBonusGagne = { type: 'bonus', valeur: valeurBonus, nbCartesVente: nombreVendu };
+                    joueurActif.jetons.push(jetonBonusGagne);
+                    joueurActif.scoreManche += valeurBonus;
+                    ajouterLog(`${joueurActif.nom} gagne un jeton bonus de ${valeurBonus}pts pour la vente de ${nombreVendu} cartes.`);
+                }
+            }
+            
+            reinitialiserSelectionAction();
+            passerAuJoueurSuivant();
+        }
+
+        btnEchanger.onclick = () => {
+            reinitialiserSelectionAction();
+            actionEnCours = 'echanger-choix-main';
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+
+            if (joueurActif.main.length + joueurActif.chameaux < 2) {
+                ajouterLog("Vous devez avoir au moins 2 cartes (marchandises ou chameaux) à échanger.");
+                return;
+            }
+             if (etatJeu.marche.length < 2) {
+                ajouterLog("Le marché doit contenir au moins 2 cartes pour un échange.");
+                return;
+            }
+
+            actionDetailsEl.innerHTML = `
+                <p>ÉCHANGE (1/2): Sélectionnez les cartes de votre main à DONNER. Indiquez le nombre de chameaux à donner.</p>
+                <label for="chameaux-a-donner">Chameaux à donner (max ${joueurActif.chameaux}): </label>
+                <input type="number" id="chameaux-a-donner" min="0" max="${joueurActif.chameaux}" value="0" style="width: 50px;">
+                <button id="btn-valider-donner-main">Suivant (Choisir cartes du marché)</button>
+                <button id="btn-annuler-action">Annuler</button>
+            `;
+            document.getElementById('btn-valider-donner-main').onclick = preparerEchangeChoixMarche;
+            document.getElementById('btn-annuler-action').onclick = () => {
+                reinitialiserSelectionAction();
+                mettreAJourAffichageComplet();
+                ajouterLog("Échange annulé.");
+            };
+             // Permettre de cliquer sur les cartes de la main pour les sélectionner
+            afficherMessageAction(`ÉCHANGE (1/2): Cliquez sur les cartes de votre main à DONNER (${cartesSelectionneesMain.length} sélectionnée(s)). Indiquez les chameaux à donner. Puis 'Suivant'.`);
+        };
+
+        function preparerEchangeChoixMarche() {
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            const nbChameauxADonnerEl = document.getElementById('chameaux-a-donner');
+            const nbChameauxADonner = nbChameauxADonnerEl ? parseInt(nbChameauxADonnerEl.value) : 0;
+
+            if (isNaN(nbChameauxADonner) || nbChameauxADonner < 0 || nbChameauxADonner > joueurActif.chameaux) {
+                ajouterLog("Nombre de chameaux à donner invalide.");
+                return;
+            }
+
+            const nbCartesMainADonner = cartesSelectionneesMain.length;
+            const totalCartesADonner = nbCartesMainADonner + nbChameauxADonner;
+
+            if (totalCartesADonner < 2) {
+                ajouterLog("Vous devez échanger au moins 2 cartes au total (marchandises de la main + chameaux).");
+                // Ne pas réinitialiser cartesSelectionneesMain pour que le joueur puisse corriger
+                return;
+            }
+            if (totalCartesADonner > etatJeu.marche.length) {
+                ajouterLog(`Vous ne pouvez pas prendre plus de cartes du marché (${etatJeu.marche.length}) que vous n'en donnez (${totalCartesADonner}).`);
+                return;
+            }
+
+            actionEnCours = 'echanger-choix-marche';
+            // Stocker le nombre de chameaux à donner pour l'étape suivante
+            // On pourrait utiliser un objet temporaire pour stocker l'état de l'échange
+            sessionStorage.setItem('echangeNbChameauxADonner', nbChameauxADonner); 
+
+            actionDetailsEl.innerHTML = `
+                <p>ÉCHANGE (2/2): Sélectionnez ${totalCartesADonner} carte(s) du marché à PRENDRE.</p>
+                <button id="btn-valider-echange-final">Valider Échange</button>
+                <button id="btn-retour-choix-main">Retour</button>
+                <button id="btn-annuler-action">Annuler</button>
+            `;
+            document.getElementById('btn-valider-echange-final').onclick = executerEchange;
+            document.getElementById('btn-retour-choix-main').onclick = () => {
+                // Garder cartesSelectionneesMain, réinitialiser cartesSelectionneesMarche
+                cartesSelectionneesMarche = [];
+                sessionStorage.removeItem('echangeNbChameauxADonner');
+                btnEchanger.onclick(); // Relance la première étape de l'échange
+            };
+            document.getElementById('btn-annuler-action').onclick = () => {
+                reinitialiserSelectionAction();
+                sessionStorage.removeItem('echangeNbChameauxADonner');
+                mettreAJourAffichageComplet();
+                ajouterLog("Échange annulé.");
+            };
+            afficherMessageAction(`ÉCHANGE (2/2): Cliquez sur ${totalCartesADonner} carte(s) du marché à PRENDRE.`);
+        }
+
+        function executerEchange() {
+            const joueurActif = etatJeu.joueurs[etatJeu.joueurCourant - 1];
+            const nbChameauxADonner = parseInt(sessionStorage.getItem('echangeNbChameauxADonner') || '0');
+            const nbCartesMainADonner = cartesSelectionneesMain.length;
+            const totalCartesADonner = nbCartesMainADonner + nbChameauxADonner;
+
+            if (cartesSelectionneesMarche.length !== totalCartesADonner) {
+                ajouterLog(`Vous devez sélectionner exactement ${totalCartesADonner} carte(s) du marché.`);
+                // Ne pas réinitialiser pour permettre correction
+                return;
+            }
+
+            // Vérification de la limite de main après échange
+            // Cartes en main actuelles - cartes données de la main + cartes prises du marché <= LIMITE_MAIN
+            if ( (joueurActif.main.length - nbCartesMainADonner + cartesSelectionneesMarche.length) > LIMITE_MAIN) {
+                ajouterLog(`Échange impossible: votre main dépasserait la limite de ${LIMITE_MAIN} cartes.`);
+                // On pourrait permettre au joueur de re-sélectionner, mais pour l'instant on annule ou on le laisse corriger.
+                return;
+            }
+            
+            // Vérifier qu'on n'échange pas que des chameaux pour que des chameaux
+            const cartesMainDonneesObj = cartesSelectionneesMain.map(idx => joueurActif.main[idx]);
+            const prendQueDesChameauxDuMarche = cartesSelectionneesMarche.every(idx => etatJeu.marche[idx].type === "CHAMEAUX");
+
+            if ( (nbCartesMainADonner === 0 && nbChameauxADonner > 0) && prendQueDesChameauxDuMarche) {
+                 ajouterLog("Échange invalide: Vous ne pouvez pas échanger uniquement des chameaux contre uniquement des chameaux.");
+                 return;
+            }
+
+
+            // Exécuter l'échange
+            // 1. Cartes du joueur vers le marché (ou défausse si c'est la règle, ici vers marché)
+            const cartesDonneesAuMarche = [];
+            // Trier les index de la main pour suppression correcte
+            cartesSelectionneesMain.sort((a, b) => b - a);
+            for (const indexCarte of cartesSelectionneesMain) {
+                cartesDonneesAuMarche.push(joueurActif.main.splice(indexCarte, 1)[0]);
+            }
+            joueurActif.chameaux -= nbChameauxADonner;
+            for (let i = 0; i < nbChameauxADonner; i++) {
+                cartesDonneesAuMarche.push(creerCarte("CHAMEAUX"));
+            }
+
+            // 2. Cartes du marché vers le joueur
+            const cartesPrisesDuMarche = [];
+            // Trier les index du marché pour suppression correcte
+            cartesSelectionneesMarche.sort((a, b) => b - a);
+            for (const indexMarche of cartesSelectionneesMarche) {
+                const cartePrise = etatJeu.marche.splice(indexMarche, 1)[0];
+                if (cartePrise.type === "CHAMEAUX") {
+                    joueurActif.chameaux++;
+                } else {
+                    joueurActif.main.push(cartePrise);
+                }
+                cartesPrisesDuMarche.push(cartePrise);
+            }
+            
+            // 3. Ajouter les cartes données par le joueur au marché
+            etatJeu.marche.push(...cartesDonneesAuMarche);
+
+            ajouterLog(`${joueurActif.nom} échange ${nbCartesMainADonner} marchandise(s) et ${nbChameauxADonner} chameau(x) contre ${cartesPrisesDuMarche.length} carte(s) du marché.`);
+            
+            sessionStorage.removeItem('echangeNbChameauxADonner');
+            reinitialiserSelectionAction();
+            passerAuJoueurSuivant();
+        }
+
+
+        // --- FIN DE TOUR / MANCHE / PARTIE ---
+        function passerAuJoueurSuivant() {
+            etatJeu.joueurCourant = etatJeu.joueurCourant === 1 ? 2 : 1;
+            ajouterLog(`C'est au tour du Joueur ${etatJeu.joueurCourant}.`);
+            
+            // Vérifier conditions de fin de manche
+            if (verifierFinManche()) {
+                terminerManche();
+            } else {
+                mettreAJourAffichageComplet();
+            }
+        }
+
+        function verifierFinManche() {
+            // Condition 1: 3 piles de jetons marchandise épuisées
+            let pilesEpuisees = 0;
+            for (const typeMarchandise in etatJeu.pilesJetons) {
+                if (etatJeu.pilesJetons[typeMarchandise].length === 0) {
+                    pilesEpuisees++;
+                }
+            }
+            if (pilesEpuisees >= 3) {
+                ajouterLog("Fin de la manche: 3 piles de jetons sont épuisées.");
+                return true;
+            }
+
+            // Condition 2: Pioche vide
+            if (etatJeu.pioche.length === 0) {
+                ajouterLog("Fin de la manche: La pioche est vide.");
+                return true;
+            }
+            return false;
+        }
+
+        function terminerManche() {
+            ajouterLog(`La manche ${etatJeu.mancheCourante} est terminée.`);
+            // Calcul final des scores de la manche (jeton chameau)
+            const joueur1 = etatJeu.joueurs[0];
+            const joueur2 = etatJeu.joueurs[1];
+
+            if (etatJeu.jetonChameauDisponible) {
+                if (joueur1.chameaux > joueur2.chameaux) {
+                    joueur1.scoreManche += JETONS_CHAMEAUX_VALEUR;
+                    ajouterLog(`${joueur1.nom} gagne le jeton Chameau (+${JETONS_CHAMEAUX_VALEUR}pts).`);
+                } else if (joueur2.chameaux > joueur1.chameaux) {
+                    joueur2.scoreManche += JETONS_CHAMEAUX_VALEUR;
+                    ajouterLog(`${joueur2.nom} gagne le jeton Chameau (+${JETONS_CHAMEAUX_VALEUR}pts).`);
+                } else {
+                    ajouterLog("Égalité pour le jeton Chameau, personne ne le gagne.");
+                }
+                etatJeu.jetonChameauDisponible = false; // Jeton attribué
+            }
+            
+            // Mettre à jour les scores de partie
+            joueur1.scorePartie += joueur1.scoreManche;
+            joueur2.scorePartie += joueur2.scoreManche;
+
+            ajouterLog(`Scores de la manche: ${joueur1.nom}: ${joueur1.scoreManche}, ${joueur2.nom}: ${joueur2.scoreManche}`);
+            ajouterLog(`Scores totaux: ${joueur1.nom}: ${joueur1.scorePartie}, ${joueur2.nom}: ${joueur2.scorePartie}`);
+            
+            // Mettre à jour l'affichage une dernière fois pour la manche
+            mettreAJourAffichageComplet(); // Pour montrer les scores finaux de manche
+            // Désactiver les boutons d'action
+            Object.values(actionsButtonsEl.getElementsByTagName('button')).forEach(btn => btn.disabled = true);
+
+
+            // Vérifier fin de partie
+            if (joueur1.scorePartie >= NB_MANCHES_POUR_GAGNER || joueur2.scorePartie >= NB_MANCHES_POUR_GAGNER) { // En fait, c'est le nombre de Sceaux de Faveur
+                 // Jaipur se gagne en remportant 2 Sceaux de Faveur (gagner 2 manches)
+                 // On va simplifier en disant que le scorePartie est le nombre de manches gagnées.
+                 // Qui a gagné la manche ?
+                 let gagnantManche = null;
+                 if (joueur1.scoreManche > joueur2.scoreManche) {
+                     joueur1.scorePartie++; // Ici scorePartie = Sceaux de Faveur
+                     gagnantManche = joueur1;
+                 } else if (joueur2.scoreManche > joueur1.scoreManche) {
+                     joueur2.scorePartie++;
+                     gagnantManche = joueur2;
+                 } else {
+                     // Égalité de score de manche, personne ne gagne de sceau (règle à vérifier, souvent le plus de jetons bonus, puis jetons)
+                     ajouterLog("Égalité des scores pour cette manche! Aucun Sceau de Faveur attribué.");
+                 }
+
+                 if (gagnantManche) {
+                    ajouterLog(`${gagnantManche.nom} remporte un Sceau de Faveur !`);
+                 }
+                 // Mettre à jour l'affichage des "Sceaux" (scorePartie)
+                 // On pourrait avoir un affichage dédié pour les sceaux. Pour l'instant, on utilise scorePartie.
+                 // Actualiser l'affichage des scores totaux qui représentent les sceaux
+                document.getElementById('joueur1-score-total-libelle').textContent = "Sceaux de Faveur :"; // A ajouter dans HTML
+                document.getElementById('joueur2-score-total-libelle').textContent = "Sceaux de Faveur :"; // A ajouter dans HTML
+                document.getElementById('joueur1-score-total').textContent = joueur1.scorePartie; // A ajouter dans HTML
+                document.getElementById('joueur2-score-total').textContent = joueur2.scorePartie; // A ajouter dans HTML
+
+
+                if (joueur1.scorePartie >= NB_MANCHES_POUR_GAGNER || joueur2.scorePartie >= NB_MANCHES_POUR_GAGNER) {
+                    terminerPartie();
+                    return;
+                }
+            }
+
+            // Si la partie n'est pas finie, préparer la manche suivante
+            etatJeu.mancheCourante++;
+            if (etatJeu.mancheCourante <= 3) { // Max 3 manches si personne n'a 2 sceaux avant
+                actionDetailsEl.innerHTML = `<button id="btn-prochaine-manche">Commencer la Manche ${etatJeu.mancheCourante}</button>`;
+                document.getElementById('btn-prochaine-manche').onclick = () => {
+                    actionDetailsEl.innerHTML = ''; // Vider après clic
+                    demarrerManche();
+                };
+            } else {
+                // Si on arrive à la fin de la 3e manche sans que qqn ait 2 sceaux, c'est une fin de partie aussi.
+                // (Ce cas est couvert par la logique ci-dessus si NB_MANCHES_POUR_GAGNER est bien géré)
+                terminerPartie(); // Devrait déjà être appelé si qqn a gagné
+            }
+        }
+
+        function terminerPartie() {
+            let gagnantPartie = null;
+            const joueur1 = etatJeu.joueurs[0];
+            const joueur2 = etatJeu.joueurs[1];
+
+            if (joueur1.scorePartie > joueur2.scorePartie) {
+                gagnantPartie = joueur1;
+            } else if (joueur2.scorePartie > joueur1.scorePartie) {
+                gagnantPartie = joueur2;
+            }
+            // En cas d'égalité de sceaux (ex: 1-1 après 3 manches, ou si on n'atteint pas 2 sceaux),
+            // la règle officielle est complexe. Ici, on va juste déclarer le joueur avec le plus de sceaux.
+            // S'il y a égalité de sceaux, on pourrait dire match nul ou regarder le score total de la dernière manche.
+
+            if (gagnantPartie) {
+                ajouterLog(`🎉 ${gagnantPartie.nom} remporte la partie avec ${gagnantPartie.scorePartie} Sceau(x) de Faveur ! 🎉`);
+                actionDetailsEl.innerHTML = `<p>🎉 ${gagnantPartie.nom} REMPORTE LA PARTIE ! 🎉</p><button onclick="rejouer()">Rejouer</button>`;
+            } else {
+                 // Gérer une égalité si NB_MANCHES_POUR_GAGNER n'est pas atteint par l'un ou l'autre après X manches.
+                 // Par exemple, si après 3 manches, c'est 1-1.
+                 // Pour l'instant, on suppose qu'il y a toujours un gagnant si la partie se termine.
+                 // Si on arrive ici sans gagnant, c'est qu'il y a eu égalité de sceaux.
+                 // Pour l'instant, on va dire match nul si égalité de sceaux.
+                ajouterLog("🏁 Match Nul ! 🏁");
+                actionDetailsEl.innerHTML = "<p>🏁 MATCH NUL ! 🏁</p><button onclick='rejouer()'>Rejouer</button>";
+            }
+            // Désactiver tous les boutons d'action du jeu
+             Object.values(actionsButtonsEl.getElementsByTagName('button')).forEach(btn => btn.disabled = true);
+        }
+        
+        function rejouer() {
+            etatJeu.mancheCourante = 1;
+            etatJeu.joueurs.forEach(j => {
+                j.scorePartie = 0; // Réinitialiser les Sceaux de Faveur
+            });
+            actionDetailsEl.innerHTML = '';
+            demarrerManche();
+        }
+
+        // --- DÉMARRAGE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ajout des éléments pour les scores totaux (Sceaux de Faveur)
+            // Cela aurait dû être dans le HTML initial, mais on peut l'ajouter ici pour la démo.
+            const p1Zone = document.getElementById('joueur1-zone');
+            const p2Zone = document.getElementById('joueur2-zone');
+
+            const p1ScoreTotalP = document.createElement('p');
+            p1ScoreTotalP.innerHTML = '<span id="joueur1-score-total-libelle">Sceaux de Faveur</span>: <span id="joueur1-score-total">0</span>';
+            p1Zone.appendChild(p1ScoreTotalP);
+
+            const p2ScoreTotalP = document.createElement('p');
+            p2ScoreTotalP.innerHTML = '<span id="joueur2-score-total-libelle">Sceaux de Faveur</span>: <span id="joueur2-score-total">0</span>';
+            p2Zone.appendChild(p2ScoreTotalP);
+            
+            ajouterLog("Bienvenue à Jaipur en mode console !");
+            demarrerManche();
+        });
+
+    </script>
+</body>
+</html>
+

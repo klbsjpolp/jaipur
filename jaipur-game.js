@@ -64,8 +64,8 @@ function initialiserJeu() {
         pioche: [],
         marche: [],
         joueurs: [
-            { main: [], chameaux: [], jetons: [], score: 0, sceaux: 1 },
-            { main: [], chameaux: [], jetons: [], score: 0, sceaux: 1 }
+            { main: [], chameaux: [], jetons: [], score: 0, sceaux: 0 },
+            { main: [], chameaux: [], jetons: [], score: 0, sceaux: 0 }
         ],
         jetons: {
             diamant: [],

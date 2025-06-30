@@ -54,7 +54,9 @@ let etatJeu = {
     quantiteAVendre: 0,
     cartesJoueurPourEchange: [],
     cartesMarchePourEchange: [],
-    chameauxPourEchange: 0
+    chameauxPourEchange: 0,
+    aiMode: [false, false], // AI mode for each player (index 0 = player 1, index 1 = player 2)
+    dernierEchangeAI: [null, null] // Dernier échange effectué par chaque IA (index 0 = player 1, index 1 = player 2)
 };
 
 // Initialiser le jeu
@@ -84,7 +86,9 @@ function initialiserJeu() {
         quantiteAVendre: 0,
         cartesJoueurPourEchange: [],
         cartesMarchePourEchange: [],
-        chameauxPourEchange: 0
+        chameauxPourEchange: 0,
+        aiMode: [false, false], // Preserve AI mode settings when initializing
+        dernierEchangeAI: [null, null] // Réinitialiser le dernier échange de chaque IA
     };
 
     // Initialiser la pioche
@@ -95,6 +99,9 @@ function initialiserJeu() {
 
     // Distribuer les cartes
     distribuerCartes();
+
+    // Vérifier si le joueur actif est en mode AI et le faire jouer si nécessaire
+    checkAndPlayAI();
 
     return etatJeu;
 }
@@ -194,6 +201,10 @@ function distribuerCartes() {
 // Changer le joueur actif
 function changerJoueurActif() {
     etatJeu.joueurActif = etatJeu.joueurActif === 1 ? 2 : 1;
+
+    // Vérifier si le nouveau joueur actif est en mode AI
+    checkAndPlayAI();
+
     return etatJeu.joueurActif;
 }
 
@@ -441,8 +452,8 @@ function verifierFinManche() {
         return true;
     }
 
-    // Condition 2: Pioche épuisée
-    return etatJeu.pioche.length === 0;
+    // Condition 2: Pioche épuisée et marché incomplet
+    return etatJeu.pioche.length === 0 && etatJeu.marche.length < 5;
 }
 
 // Terminer la manche
@@ -529,6 +540,9 @@ function preparerMancheSuivante() {
         etatJeu.joueurActif = 1;
     }
 
+    // Vérifier si le joueur actif est en mode AI et le faire jouer si nécessaire
+    checkAndPlayAI();
+
     return etatJeu;
 }
 
@@ -545,6 +559,332 @@ function nouvellePartie() {
     initialiserJeu();
 
     return etatJeu;
+}
+
+// Fonctions pour gérer le mode AI
+function toggleAIMode(joueurId) {
+    if (joueurId < 1 || joueurId > 2) {
+        return { success: false, message: "Joueur invalide!" };
+    }
+
+    etatJeu.aiMode[joueurId - 1] = !etatJeu.aiMode[joueurId - 1];
+    return { 
+        success: true, 
+        enabled: etatJeu.aiMode[joueurId - 1],
+        message: `Mode AI ${etatJeu.aiMode[joueurId - 1] ? "activé" : "désactivé"} pour le Joueur ${joueurId}`
+    };
+}
+
+function isAIMode(joueurId) {
+    if (joueurId < 1 || joueurId > 2) {
+        return false;
+    }
+    return etatJeu.aiMode[joueurId - 1];
+}
+
+// Fonction pour faire jouer l'IA
+function playAI() {
+    // Vérifier si c'est au tour de l'IA
+    if (!isAIMode(etatJeu.joueurActif)) {
+        return { success: false, message: "Ce n'est pas au tour de l'IA!" };
+    }
+
+    const joueur = etatJeu.joueurs[etatJeu.joueurActif - 1];
+    let result = { success: false, message: "" };
+
+    // Stratégie 1: Vendre des cartes si possible
+    // Vérifier si le joueur a assez de cartes d'un même type pour les vendre
+    const compteCarte = {};
+    joueur.main.forEach(carte => {
+        if (!compteCarte[carte.type]) {
+            compteCarte[carte.type] = 0;
+        }
+        compteCarte[carte.type]++;
+    });
+
+    // Essayer de vendre les cartes les plus précieuses d'abord
+    const typesParPriorite = ["diamant", "or", "argent", "tissu", "epice", "cuir"];
+
+    // Stratégie avancée: Vendre seulement quand c'est avantageux
+    for (const type of typesParPriorite) {
+        // Vendre 3+ cartes de haute valeur, ou vendre 5+ de basse valeur
+        if (compteCarte[type]) {
+            // Si c'est un type précieux ou si on a beaucoup de cartes, on vend
+            const estTypePrecieux = typesParPriorite.indexOf(type) <= 2;
+            const quantiteOptimale = estTypePrecieux ? 3 : 5;
+
+            // Vendre si on a atteint un seuil optimal, ou si on risque de ne plus pouvoir jouer
+            if ((compteCarte[type] >= quantiteOptimale && compteCarte[type] >= TYPES_MARCHANDISES[type].min_vente) || 
+                (joueur.main.length >= 6 && compteCarte[type] >= TYPES_MARCHANDISES[type].min_vente)) {
+                result = vendreCartes(type, compteCarte[type]);
+                if (result.success) {
+                    return { 
+                        success: true, 
+                        message: `L'IA a vendu ${compteCarte[type]} ${TYPES_MARCHANDISES[type].nom}(s).`,
+                        mancheTerminee: result.mancheTerminee
+                    };
+                }
+            }
+        }
+    }
+
+    // Stratégie 2: Vérifier les possibilités d'échange avantageuses
+    // Cette stratégie permet d'obtenir des cartes de valeur supérieure
+    if (joueur.chameaux.length > 0 || joueur.main.length > 0) {
+        const echangesPossibles = trouverMeilleursEchanges(joueur, etatJeu.marche);
+        if (echangesPossibles.cartesJoueur.length > 0) {
+            // Vérifier si c'est le même échange que le précédent
+            const joueurIndex = etatJeu.joueurActif - 1;
+            const dernierEchange = etatJeu.dernierEchangeAI[joueurIndex];
+
+            // Comparer l'échange actuel avec le dernier échange
+            const memeEchange = dernierEchange && 
+                JSON.stringify(dernierEchange.cartesJoueur.sort()) === JSON.stringify([...echangesPossibles.cartesJoueur].sort()) &&
+                JSON.stringify(dernierEchange.cartesMarche.sort()) === JSON.stringify([...echangesPossibles.cartesMarche].sort()) &&
+                dernierEchange.nombreChameaux === echangesPossibles.nombreChameaux;
+
+            // Si c'est le même échange, passer à une autre stratégie
+            if (memeEchange) {
+                console.log("L'IA évite de faire le même échange deux fois de suite.");
+                // Ne pas faire cet échange, continuer avec les autres stratégies
+            } else {
+                // Effectuer l'échange et le stocker comme dernier échange
+                result = echangerMarchandises(
+                    echangesPossibles.cartesJoueur, 
+                    echangesPossibles.cartesMarche, 
+                    echangesPossibles.nombreChameaux
+                );
+                if (result.success) {
+                    // Stocker l'échange comme dernier échange pour ce joueur
+                    etatJeu.dernierEchangeAI[joueurIndex] = {
+                        cartesJoueur: [...echangesPossibles.cartesJoueur],
+                        cartesMarche: [...echangesPossibles.cartesMarche],
+                        nombreChameaux: echangesPossibles.nombreChameaux
+                    };
+
+                    return { 
+                        success: true, 
+                        message: `L'IA a échangé ${echangesPossibles.cartesJoueur.length + echangesPossibles.nombreChameaux} cartes.` 
+                    };
+                }
+            }
+        }
+    }
+
+    // Stratégie 3: Prendre tous les chameaux s'il y en a
+    // Ne prendre les chameaux que si on en a moins de 5 ou s'il y en a plusieurs sur le marché
+    const chameauxDansMarche = etatJeu.marche.filter(carte => carte.type === "chameau").length;
+    if (chameauxDansMarche > 0 && (chameauxDansMarche >= 2 || joueur.chameaux.length < 5)) {
+        result = prendreTousLesChameaux();
+        if (result.success) {
+            return { success: true, message: "L'IA a pris tous les chameaux." };
+        }
+    }
+
+    // Stratégie 4: Essayer d'accumuler des cartes du même type pour les vendre plus tard
+    // Analyser quels types de cartes on a déjà en main pour prioriser leur accumulation
+    const typesAAccumuler = typesParPriorite.filter(type => 
+        compteCarte[type] && compteCarte[type] > 0 && compteCarte[type] < TYPES_MARCHANDISES[type].min_vente + 2
+    );
+
+    if (typesAAccumuler.length > 0 && joueur.main.length < 6) {
+        // Chercher ces types dans le marché
+        for (let i = 0; i < etatJeu.marche.length; i++) {
+            const carte = etatJeu.marche[i];
+            if (carte.type !== "chameau" && typesAAccumuler.includes(carte.type)) {
+                result = prendreCarteDuMarche(i);
+                if (result.success) {
+                    return { success: true, message: `L'IA a pris une carte ${TYPES_MARCHANDISES[carte.type].nom} pour compléter sa collection.` };
+                }
+            }
+        }
+    }
+
+    // Stratégie 5: Prendre une carte précieuse du marché
+    if (joueur.main.length < 6) {
+        for (let i = 0; i < etatJeu.marche.length; i++) {
+            const carte = etatJeu.marche[i];
+            if (carte.type !== "chameau" && typesParPriorite.indexOf(carte.type) <= 2) { // Diamant, Or, Argent
+                result = prendreCarteDuMarche(i);
+                if (result.success) {
+                    return { success: true, message: `L'IA a pris une carte ${TYPES_MARCHANDISES[carte.type].nom}.` };
+                }
+            }
+        }
+    }
+
+    // Stratégie 6: Prendre n'importe quelle carte du marché
+    if (joueur.main.length < 7) {
+        for (let i = 0; i < etatJeu.marche.length; i++) {
+            const carte = etatJeu.marche[i];
+            if (carte.type !== "chameau") {
+                result = prendreCarteDuMarche(i);
+                if (result.success) {
+                    return { success: true, message: `L'IA a pris une carte ${TYPES_MARCHANDISES[carte.type].nom}.` };
+                }
+            }
+        }
+    }
+
+    // En dernier recours, prendre des chameaux même si ce n'est pas optimal
+    if (chameauxDansMarche > 0) {
+        result = prendreTousLesChameaux();
+        if (result.success) {
+            return { success: true, message: "L'IA a pris tous les chameaux comme dernier recours." };
+        }
+    }
+
+    return { success: false, message: "L'IA n'a pas pu jouer son tour." };
+}
+
+// Fonction utilitaire pour déterminer les meilleurs échanges possibles
+function trouverMeilleursEchanges(joueur, marche) {
+    const typesParPriorite = ["diamant", "or", "argent", "tissu", "epice", "cuir"];
+    const echanges = { cartesJoueur: [], cartesMarche: [], nombreChameaux: 0, score: -Infinity };
+
+    // Calculer les cartes disponibles pour l'échange
+    const compteCarte = {};
+    joueur.main.forEach(carte => {
+        if (!compteCarte[carte.type]) {
+            compteCarte[carte.type] = 0;
+        }
+        compteCarte[carte.type]++;
+    });
+
+    // Essayer différentes combinaisons d'échanges (limité pour simplifier)
+    // Chercher des échanges pour 1 à 3 cartes
+    for (let taille = 1; taille <= 3; taille++) {
+        if (joueur.main.length + joueur.chameaux.length < taille) continue;
+
+        // Calculer toutes les possibilités d'échange de cette taille
+        const cartesJoueurPossibles = [];
+        const cartesJoueurTypes = Object.keys(compteCarte).filter(type => compteCarte[type] > 0);
+
+        // Pour les cartes du joueur, priorité aux cartes moins précieuses
+        const typesJoueurParPriorite = [...typesParPriorite].reverse();
+
+        // Si le joueur a assez de cartes en main
+        if (joueur.main.length >= taille) {
+            // Tester en utilisant seulement des cartes en main
+            const typesAUtiliser = [];
+
+            // Prioriser l'utilisation des cartes de moindre valeur
+            for (const type of typesJoueurParPriorite) {
+                if (compteCarte[type] && compteCarte[type] > 0) {
+                    for (let i = 0; i < Math.min(compteCarte[type], taille - typesAUtiliser.length); i++) {
+                        typesAUtiliser.push(type);
+                        if (typesAUtiliser.length === taille) break;
+                    }
+                }
+                if (typesAUtiliser.length === taille) break;
+            }
+
+            if (typesAUtiliser.length === taille) {
+                cartesJoueurPossibles.push({
+                    types: typesAUtiliser,
+                    chameaux: 0
+                });
+            }
+        }
+
+        // Utiliser des chameaux pour compléter si nécessaire
+        if (joueur.chameaux.length > 0) {
+            for (let chameauxUtilises = 1; chameauxUtilises <= Math.min(joueur.chameaux.length, taille); chameauxUtilises++) {
+                if (joueur.main.length < taille - chameauxUtilises) continue;
+
+                const typesAUtiliser = [];
+                for (const type of typesJoueurParPriorite) {
+                    if (compteCarte[type] && compteCarte[type] > 0) {
+                        for (let i = 0; i < Math.min(compteCarte[type], taille - chameauxUtilises - typesAUtiliser.length); i++) {
+                            typesAUtiliser.push(type);
+                            if (typesAUtiliser.length === taille - chameauxUtilises) break;
+                        }
+                    }
+                    if (typesAUtiliser.length === taille - chameauxUtilises) break;
+                }
+
+                if (typesAUtiliser.length === taille - chameauxUtilises) {
+                    cartesJoueurPossibles.push({
+                        types: typesAUtiliser,
+                        chameaux: chameauxUtilises
+                    });
+                }
+            }
+        }
+
+        // Pour chaque combinaison de cartes du joueur, chercher les meilleures cartes à prendre dans le marché
+        for (const possibilite of cartesJoueurPossibles) {
+            const indicesMarche = [];
+            let scoreEchange = 0;
+
+            // Calculer la valeur des cartes du joueur qu'on va échanger
+            const valeurCartesJoueur = possibilite.types.reduce((total, type) => {
+                // Estimation de la valeur: position dans la liste des priorités
+                return total + (typesParPriorite.length - typesParPriorite.indexOf(type));
+            }, 0);
+
+            // Chercher les cartes de plus haute valeur dans le marché
+            const cartesMarche = marche.map((carte, index) => ({
+                carte,
+                index,
+                valeur: carte.type !== "chameau" ? typesParPriorite.indexOf(carte.type) + 1 : 0
+            }))
+            .filter(item => item.carte.type !== "chameau") // Exclure les chameaux
+            .sort((a, b) => a.valeur - b.valeur); // Trier par valeur (plus petit index = plus précieux)
+
+            // Prendre les meilleures cartes du marché
+            for (let i = 0; i < Math.min(taille, cartesMarche.length); i++) {
+                indicesMarche.push(cartesMarche[i].index);
+                scoreEchange += cartesMarche[i].valeur;
+            }
+
+            // Si on n'a pas assez de cartes dans le marché, cette combinaison n'est pas valide
+            if (indicesMarche.length !== taille) continue;
+
+            // Calculer le score final de cet échange (valeur obtenue - valeur donnée)
+            // Plus la différence est grande, meilleur est l'échange
+            const scoreFinal = scoreEchange - valeurCartesJoueur - (possibilite.chameaux * 0.5); // Les chameaux ont une petite valeur
+
+            // Si cet échange est meilleur que le précédent
+            if (scoreFinal > echanges.score && indicesMarche.length === taille) {
+                echanges.cartesJoueur = [...possibilite.types];
+                echanges.cartesMarche = [...indicesMarche];
+                echanges.nombreChameaux = possibilite.chameaux;
+                echanges.score = scoreFinal;
+            }
+        }
+    }
+
+    // Ne proposer un échange que s'il est avantageux
+    if (echanges.score <= 0) {
+        echanges.cartesJoueur = [];
+        echanges.cartesMarche = [];
+        echanges.nombreChameaux = 0;
+    }
+
+    return echanges;
+}
+
+// Vérifier si le joueur actif est en mode AI et le faire jouer si nécessaire
+function checkAndPlayAI() {
+    if (isAIMode(etatJeu.joueurActif)) {
+        // Laisser un court délai pour que l'interface se mette à jour
+        setTimeout(() => {
+            const aiResult = playAI();
+            // Le message et la mise à jour de l'affichage seront gérés par l'interface
+            // Mais on peut aussi déclencher un événement personnalisé pour informer l'interface
+            if (aiResult.success && typeof window !== 'undefined' && window.document) {
+                const event = new CustomEvent('aiPlayed', { 
+                    detail: { 
+                        success: aiResult.success, 
+                        message: aiResult.message,
+                        mancheTerminee: aiResult.mancheTerminee
+                    } 
+                });
+                window.document.dispatchEvent(event);
+            }
+        }, 800); // Délai de 1 seconde pour que l'action de l'IA soit visible
+    }
 }
 
 // Les fonctions et constantes sont maintenant disponibles globalement

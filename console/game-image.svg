@@ -1,0 +1,65 @@
+<svg width="150" height="100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark console background -->
+  <rect width="150" height="100" fill="#1E1E1E"/>
+  
+  <!-- Console border -->
+  <rect x="2" y="2" width="146" height="96" fill="none" stroke="#444" stroke-width="1"/>
+  
+  <!-- Market zone background -->
+  <rect x="8" y="8" width="134" height="25" fill="#252525" stroke="#333" stroke-width="1"/>
+  
+  <!-- Market cards representing different goods -->
+  <rect x="12" y="12" width="15" height="8" fill="#569CD6" stroke="#569CD6" stroke-width="1" rx="1"/> <!-- Diamant -->
+  <rect x="30" y="12" width="15" height="8" fill="#DCDCAA" stroke="#DCDCAA" stroke-width="1" rx="1"/> <!-- Or -->
+  <rect x="48" y="12" width="15" height="8" fill="#B5CEA8" stroke="#B5CEA8" stroke-width="1" rx="1"/> <!-- Argent -->
+  <rect x="66" y="12" width="15" height="8" fill="#C586C0" stroke="#C586C0" stroke-width="1" rx="1"/> <!-- Tissu -->
+  <rect x="84" y="12" width="15" height="8" fill="#CE9178" stroke="#CE9178" stroke-width="1" rx="1"/> <!-- Epice -->
+  <rect x="102" y="12" width="15" height="8" fill="#D7BA7D" stroke="#D7BA7D" stroke-width="1" rx="1"/> <!-- Cuir -->
+  <rect x="120" y="12" width="15" height="8" fill="#8B4513" stroke="#8B4513" stroke-width="1" rx="1"/> <!-- Chameau -->
+  
+  <!-- Second row of market cards -->
+  <rect x="12" y="22" width="15" height="8" fill="#569CD6" stroke="#569CD6" stroke-width="1" rx="1"/>
+  <rect x="30" y="22" width="15" height="8" fill="#C586C0" stroke="#C586C0" stroke-width="1" rx="1"/>
+  <rect x="48" y="22" width="15" height="8" fill="#8B4513" stroke="#8B4513" stroke-width="1" rx="1"/>
+  
+  <!-- Player 1 zone (left, green theme) -->
+  <rect x="8" y="38" width="65" height="54" fill="#252525" stroke="#4CAF50" stroke-width="2"/>
+  
+  <!-- Player 1 hand cards -->
+  <rect x="12" y="42" width="12" height="7" fill="#DCDCAA" stroke="#DCDCAA" stroke-width="1" rx="1"/>
+  <rect x="26" y="42" width="12" height="7" fill="#CE9178" stroke="#CE9178" stroke-width="1" rx="1"/>
+  <rect x="40" y="42" width="12" height="7" fill="#B5CEA8" stroke="#B5CEA8" stroke-width="1" rx="1"/>
+  
+  <!-- Player 1 camels -->
+  <rect x="12" y="52" width="10" height="6" fill="#8B4513" stroke="#8B4513" stroke-width="1" rx="1"/>
+  <rect x="24" y="52" width="10" height="6" fill="#8B4513" stroke="#8B4513" stroke-width="1" rx="1"/>
+  
+  <!-- Player 1 tokens -->
+  <circle cx="18" cy="65" r="3" fill="#DCDCAA"/>
+  <circle cx="26" cy="65" r="3" fill="#569CD6"/>
+  <circle cx="34" cy="65" r="3" fill="#CE9178"/>
+  
+  <!-- Player 2 zone (right, blue theme) -->
+  <rect x="77" y="38" width="65" height="54" fill="#252525" stroke="#2196F3" stroke-width="2"/>
+  
+  <!-- Player 2 hand cards -->
+  <rect x="81" y="42" width="12" height="7" fill="#569CD6" stroke="#569CD6" stroke-width="1" rx="1"/>
+  <rect x="95" y="42" width="12" height="7" fill="#D7BA7D" stroke="#D7BA7D" stroke-width="1" rx="1"/>
+  <rect x="109" y="42" width="12" height="7" fill="#C586C0" stroke="#C586C0" stroke-width="1" rx="1"/>
+  <rect x="123" y="42" width="12" height="7" fill="#DCDCAA" stroke="#DCDCAA" stroke-width="1" rx="1"/>
+  
+  <!-- Player 2 camels -->
+  <rect x="81" y="52" width="10" height="6" fill="#8B4513" stroke="#8B4513" stroke-width="1" rx="1"/>
+  <rect x="93" y="52" width="10" height="6" fill="#8B4513" stroke="#8B4513" stroke-width="1" rx="1"/>
+  <rect x="105" y="52" width="10" height="6" fill="#8B4513" stroke="#8B4513" stroke-width="1" rx="1"/>
+  
+  <!-- Player 2 tokens -->
+  <circle cx="87" cy="65" r="3" fill="#B5CEA8"/>
+  <circle cx="95" cy="65" r="3" fill="#C586C0"/>
+  <circle cx="103" cy="65" r="3" fill="#D7BA7D"/>
+  <circle cx="111" cy="65" r="3" fill="#569CD6"/>
+  
+  <!-- Console terminal indicators -->
+  <circle cx="140" cy="12" r="2" fill="#00FF00"/>
+  <circle cx="140" cy="88" r="2" fill="#FFFF00"/>
+</svg>

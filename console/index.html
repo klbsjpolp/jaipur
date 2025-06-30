@@ -338,7 +338,7 @@
         </div>
     </div>
 
-    <script src="jaipur-game.js"></script>
+    <script src="../jaipur-game.js"></script>
     <script>
         // La logique du jeu est maintenant chargée depuis jaipur-game.js
         // et disponible globalement
@@ -558,22 +558,35 @@
                     jetonsElement.innerHTML = "Aucun jeton amassé";
                 } else {
                     let jetonsHTML = "";
+
+                    // Compter les jetons par type
                     const compteJetons = {};
+                    const compteBonusJetons = {};
 
                     joueur.jetons.forEach(jeton => {
-                        if (!compteJetons[jeton.type]) {
-                            compteJetons[jeton.type] = { total: 0, valeurs: [] };
+                        if (jeton.type.startsWith("bonus")) {
+                            // Pour les jetons bonus, on compte le nombre de jetons
+                            if (!compteBonusJetons[jeton.type]) {
+                                compteBonusJetons[jeton.type] = 0;
+                            }
+                            compteBonusJetons[jeton.type]++;
+                        } else {
+                            // Pour les autres jetons, on somme les valeurs
+                            if (!compteJetons[jeton.type]) {
+                                compteJetons[jeton.type] = { total: 0 };
+                            }
+                            compteJetons[jeton.type].total += jeton.valeur;
                         }
-                        compteJetons[jeton.type].total += jeton.valeur;
-                        compteJetons[jeton.type].valeurs.push(jeton.valeur);
                     });
 
+                    // Afficher les jetons normaux
                     for (const [type, data] of Object.entries(compteJetons)) {
-                        if (type.startsWith("bonus")) {
-                            jetonsHTML += `<span>Bonus ${type.substring(5)} (${data.total})</span> `;
-                        } else {
-                            jetonsHTML += `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom} (${data.total})</span> `;
-                        }
+                        jetonsHTML += `<span class="${TYPES_MARCHANDISES[type].classe}">${TYPES_MARCHANDISES[type].nom} (${data.total})</span> `;
+                    }
+
+                    // Afficher les jetons bonus
+                    for (const [type, count] of Object.entries(compteBonusJetons)) {
+                        jetonsHTML += `<span>Bonus ${type.substring(5)} (${count}x)</span> `;
                     }
 
                     jetonsElement.innerHTML = jetonsHTML;
@@ -647,9 +660,9 @@
 
                 if (etatJeu.jetons[`bonus${nbCartes}`].length > 0) {
                     let jetonsHTML = `Bonus ${nbCartes}: `;
-                    // Afficher seulement le nombre de jetons bonus disponibles
+                    // Représenter les jetons bonus avec des astérisques (*)
                     let nb = etatJeu.jetons[`bonus${nbCartes}`].length;
-                    jetonsHTML += nb + (nb > 1 ? ' jetons' : ' jeton');
+                    jetonsHTML += '* '.repeat(nb);
                     pileElement.innerHTML = jetonsHTML;
                 } else {
                     pileElement.innerHTML = `Bonus ${nbCartes}: (Épuisé)`;
@@ -949,9 +962,26 @@
                 endRoundModal.style.display = "block";
             }
 
+            // Si la partie est terminée, modifier le bouton "Manche Suivante" pour afficher le modal de fin de partie
             if (result.partieTerminee) {
-                // Fin du jeu
-                handleTerminerJeu();
+                const nextRoundButton = document.getElementById("next-round");
+                if (nextRoundButton) {
+                    nextRoundButton.textContent = "Voir les résultats de la partie";
+                    // Supprimer l'écouteur d'événement existant
+                    const newNextRoundButton = nextRoundButton.cloneNode(true);
+                    nextRoundButton.parentNode.replaceChild(newNextRoundButton, nextRoundButton);
+
+                    // Ajouter un nouvel écouteur d'événement
+                    newNextRoundButton.addEventListener("click", () => {
+                        // Fermer la modal de fin de manche
+                        const endRoundModal = document.getElementById("end-round-modal");
+                        if (endRoundModal) {
+                            endRoundModal.style.display = "none";
+                        }
+                        // Afficher la modal de fin de jeu
+                        handleTerminerJeu();
+                    });
+                }
             }
         }
 

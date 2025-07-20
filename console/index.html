@@ -285,6 +285,167 @@
         .close-modal:hover {
             color: white;
         }
+
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .console {
+                max-width: 100%;
+                max-height: none;
+                padding: 10px;
+                margin: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+                margin: 10px 0;
+            }
+
+            /* Stack player zones vertically */
+            .player-zone {
+                flex-direction: column;
+            }
+
+            .player {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            /* Improve card layout for mobile */
+            .market-cards {
+                justify-content: center;
+                gap: 5px;
+            }
+
+            .card {
+                min-width: 80px;
+                padding: 8px 12px;
+                margin: 3px;
+                font-size: 0.9em;
+                touch-action: manipulation;
+            }
+
+            /* Better button sizing for touch */
+            .action-button {
+                padding: 12px 18px;
+                margin: 3px;
+                font-size: 0.9em;
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+
+            .ai-button {
+                padding: 6px 12px;
+                font-size: 0.7em;
+                position: static;
+                margin-left: 10px;
+            }
+
+            /* Adjust token piles for mobile */
+            .token-piles {
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .token-pile {
+                min-width: 100px;
+                font-size: 0.85em;
+            }
+
+            /* Improve action buttons layout */
+            .action-buttons {
+                justify-content: center;
+                gap: 5px;
+            }
+
+            /* Market actions responsive */
+            .market-actions {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .market-actions p {
+                margin: 0 0 10px 0 !important;
+                text-align: center;
+                white-space: normal !important;
+            }
+
+            /* Modal adjustments for mobile */
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+                margin: 10px;
+            }
+
+            /* Reduce margins and padding for mobile */
+            .market-zone, .tokens-zone, .actions-zone {
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+
+            .info-zone, .message-zone {
+                padding: 8px;
+                margin-bottom: 10px;
+            }
+
+            .player-hand, .player-camels, .player-tokens {
+                padding: 8px;
+                margin-bottom: 8px;
+                font-size: 0.9em;
+            }
+
+            .player-title {
+                font-size: 1.1em;
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 5px;
+                font-size: 13px;
+            }
+
+            .console {
+                padding: 5px;
+            }
+
+            .header h1 {
+                font-size: 1.3em;
+            }
+
+            .card {
+                min-width: 70px;
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+
+            .action-button {
+                padding: 10px 15px;
+                font-size: 0.8em;
+            }
+
+            .token-pile {
+                min-width: 80px;
+                font-size: 0.8em;
+            }
+
+            .market-zone, .tokens-zone, .actions-zone {
+                padding: 6px;
+            }
+
+            .player-hand, .player-camels, .player-tokens {
+                padding: 6px;
+                font-size: 0.85em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -436,22 +597,32 @@
                 if (joueur.main.length === 0) {
                     mainElement.innerHTML = "Aucune carte dans la main";
                 } else {
-                    let mainHTML = "";
-                    const compteCarte = {};
+                    // Check visibility rules:
+                    // - Player 2 cards are ALWAYS hidden when AI is activated
+                    // - When AI is NOT activated, only current player's hand is visible
+                    // - Player 1 cards are always visible when it's their turn
 
-                    joueur.main.forEach(carte => {
-                        if (!compteCarte[carte.type]) {
-                            compteCarte[carte.type] = 0;
+                    let shouldShowCards = false;
+
+                    if (joueurId === 2 && isAIMode(2)) {
+                        // Player 2 with AI activated - never show cards
+                        shouldShowCards = false;
+                    } else if (joueurId === 1 && isAIMode(2)) {
+                        // Player 1 with AI activated - always show cards
+                        shouldShowCards = true;
+                    } else {
+                        // AI is NOT activated - show cards only for current player
+                        shouldShowCards = (joueurId === etatJeu.joueurActif);
+                    }
+
+                    if (!shouldShowCards) {
+                        if (joueurId === 2 && isAIMode(2)) {
+                            mainElement.innerHTML = "Main cachée (IA activée)";
+                        } else {
+                            mainElement.innerHTML = "Main cachée";
                         }
-                        compteCarte[carte.type]++;
-                    });
-
-                    // Seul le joueur actif peut interagir avec ses cartes
-                    if (joueurId === etatJeu.joueurActif) {
-                        // Afficher les cartes individuellement
-                        mainHTML += "<div style='display: flex; flex-wrap: wrap;'>";
-
-                        // Créer un tableau de toutes les cartes (sauf les chameaux) et les trier dans l'ordre spécifié
+                    } else {
+                        // Show the cards with interaction capability for active player
                         const cartes = [];
                         joueur.main.forEach(carte => {
                             // Ne pas inclure les chameaux dans la main
@@ -479,52 +650,21 @@
                             cardDiv.dataset.type = type;
                             cardDiv.dataset.index = idx;
 
-                            // Ajouter un gestionnaire d'événements pour la sélection
-                            cardDiv.addEventListener("click", () => {
-                                // Toggle selection state
-                                if (cardDiv.classList.contains("selected")) {
-                                    cardDiv.classList.remove("selected");
-                                } else {
-                                    cardDiv.classList.add("selected");
-                                }
+                            // Add click handlers only for the active player
+                            if (joueurId === etatJeu.joueurActif) {
+                                cardDiv.addEventListener("click", () => {
+                                    // Toggle selection state
+                                    if (cardDiv.classList.contains("selected")) {
+                                        cardDiv.classList.remove("selected");
+                                    } else {
+                                        cardDiv.classList.add("selected");
+                                    }
 
-                                // Update possible actions
-                                mettreAJourActionsPossibles();
-                            });
-
-                            cardsContainer.appendChild(cardDiv);
-                        });
-
-                        // Clear the main element and append the cards container
-                        mainElement.innerHTML = "";
-                        mainElement.appendChild(cardsContainer);
-                    } else {
-                        // Afficher les cartes individuellement pour le joueur non actif
-                        // Create a container for the cards
-                        const cardsContainer = document.createElement("div");
-                        cardsContainer.style.display = "flex";
-                        cardsContainer.style.flexWrap = "wrap";
-
-                        // Créer un tableau de toutes les cartes (sauf les chameaux) et les trier dans l'ordre spécifié
-                        const cartes = [];
-                        joueur.main.forEach(carte => {
-                            // Ne pas inclure les chameaux dans la main
-                            if (carte.type !== "chameau") {
-                                cartes.push(carte.type);
+                                    // Update possible actions
+                                    mettreAJourActionsPossibles();
+                                });
                             }
-                        });
 
-                        // Trier les cartes dans l'ordre: diamant, or, argent, tissu, epice, cuir
-                        const ordreCartes = ["diamant", "or", "argent", "tissu", "epice", "cuir"];
-                        cartes.sort((a, b) => {
-                            return ordreCartes.indexOf(a) - ordreCartes.indexOf(b);
-                        });
-
-                        // Afficher chaque carte individuellement
-                        cartes.forEach(type => {
-                            const cardDiv = document.createElement("div");
-                            cardDiv.className = `card ${TYPES_MARCHANDISES[type].classe}`;
-                            cardDiv.textContent = `${TYPES_MARCHANDISES[type].nom}`;
                             cardsContainer.appendChild(cardDiv);
                         });
 
@@ -1099,6 +1239,7 @@
                 const result = toggleAIMode(2);
                 afficherMessage(result.message);
                 updateAIButtonAppearance();
+                mettreAJourJoueurs();
 
                 // If AI is enabled and it's their turn, make them play
                 if (result.enabled && etatJeu.joueurActif === 2) {

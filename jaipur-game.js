@@ -258,7 +258,6 @@ function prendreTousLesChameaux() {
 
     // Ajouter les chameaux à la réserve du joueur
     const joueur = etatJeu.joueurs[etatJeu.joueurActif - 1];
-    console.log("Before adding camels:", joueur.chameaux);
 
     // Stocker les positions des chameaux pour les remplacer plus tard
     const positionsARemplacer = [];
@@ -266,11 +265,9 @@ function prendreTousLesChameaux() {
     for (let i = chameauxIndices.length - 1; i >= 0; i--) {
         const index = chameauxIndices[i];
         const camel = etatJeu.marche.splice(index, 1)[0];
-        console.log("Adding camel:", camel);
         joueur.chameaux.push(camel);
         positionsARemplacer.push(index);
     }
-    console.log("After adding camels:", joueur.chameaux);
 
     // Piocher de nouvelles cartes pour remplacer les chameaux pris
     // Trier les positions en ordre décroissant pour éviter les problèmes d'index

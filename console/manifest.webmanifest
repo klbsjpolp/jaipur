@@ -1,0 +1,18 @@
+{
+  "name": "Jaipur - Console Theme",
+  "short_name": "Jaipur",
+  "description": "Jaipur board game web app.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1E1E1E",
+  "theme_color": "#1E1E1E",
+  "icons": [
+    {
+      "src": "./game-image.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

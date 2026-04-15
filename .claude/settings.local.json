@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(git *)",
+      "Bash(sed *)",
       "mcp__Claude_Preview__preview_start"
     ]
   }

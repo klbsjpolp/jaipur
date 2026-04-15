@@ -432,20 +432,127 @@
                 max-width: none;
             }
         }
+
+        /* ============================================================
+           Grid-based alignment: left labels ↔ right sections
+           ============================================================
+           The outer wrap becomes a 2-column, 7-row CSS Grid.
+           Both the left-frame and right-frame use CSS Subgrid so every
+           child lands in the same named row as its counterpart:
+             row 1 – corner decoration (bar-panel on right)
+             row 2 – MESSAGES  / status-row
+             row 3 – MARCHÉ    / market-cards
+             row 4 – ACTIONS   / action-buttons
+             row 5 – JOUEURS   / players-container
+             row 6 – JETONS    / token-piles
+             row 7 – panel-9 filler
+        ============================================================ */
+
+        /* Corner-row height — matches .left-frame padding-top in classic.css */
+        :root {
+            --lf-corner-height: 40px;
+        }
+        @media (max-width: 525px) {
+            :root {
+                --lf-corner-height: 25px;
+            }
+        }
+
+        /* Outer grid: content rows are auto-sized, so each row grows to the taller
+           of its left panel and its right section. The left-panel heights below
+           (min-height overrides) establish the row minimums. */
+        #gap {
+            display: grid;
+            grid-template-columns: var(--lfw) 1fr;
+            grid-template-rows:
+                var(--lf-corner-height)  /* row 1: corner / bar-panel */
+                auto                      /* row 2: MESSAGES */
+                auto                      /* row 3: MARCHÉ */
+                auto                      /* row 4: ACTIONS */
+                auto                      /* row 5: JOUEURS */
+                auto                      /* row 6: JETONS */
+                1fr;                      /* row 7: panel-9 filler */
+            min-height: 100svh;
+        }
+
+        /* Left frame: subgrid over all 7 rows. Explicit single column ensures
+           panels stretch to the full --lfw width (fixes the red strip). */
+        #gap > .left-frame {
+            grid-column: 1;
+            grid-row: 1 / 8;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: subgrid;
+            padding-top: 0; /* replaced by .left-corner-spacer in HTML */
+        }
+
+        /* Right frame: subgrid over all 7 rows, single column for main/bar-panel */
+        #gap > .right-frame {
+            grid-column: 2;
+            grid-row: 1 / 8;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: subgrid;
+        }
+
+        /* Bar panel stays at the top of row 1 rather than stretching */
+        #gap > .right-frame > .bar-panel {
+            align-self: start;
+        }
+
+        /* Main: nested subgrid over rows 2–7, so every section lands in the
+           same outer row as its left-side label */
+        #gap > .right-frame > main {
+            grid-row: 2 / 8;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: subgrid;
+            padding-top: 0; /* row 1 already provides the top gap */
+        }
+
+        /* Convert the three fixed-height panels to minimums, so the row
+           (and the panel itself) can grow when the right side is taller.
+           This is what gives us the "dynamic, aligned multi-row" behavior. */
+        #gap > .left-frame > .panel-3 {
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+        }
+
+        #gap > .left-frame > .panel-6 {
+            min-height: min(29vh, 360px);
+            height: auto;
+            max-height: none;
+        }
+        #gap > .left-frame > .panel-7 {
+            min-height: min(27vh, 350px);
+            height: auto;
+            max-height: none;
+        }
+        #gap > .left-frame > .panel-8 {
+            min-height: 15vh;
+            height: auto;
+            max-height: none;
+        }
+        @media (max-width: 525px) {
+            #gap > .left-frame > .panel-6,
+            #gap > .left-frame > .panel-7 {
+                min-height: 18vh;
+            }
+        }
     </style>
 </head>
 <body>
     <section class="wrap-standard" id="column-3">
         <div class="wrap" id="gap">
             <div class="left-frame">
-                <div>
-                    <div class="panel-3">MESSAGES</div>
-                    <div class="panel-5 market-section">MARCHÉ</div>
-                    <div class="panel-6 actions-section">ACTIONS</div>
-                    <div class="panel-7 players-section">JOUEURS</div>
-                    <div class="panel-8 tokens-section">JETONS&nbsp;<span class="hop">DISPONIBLES</span></div>
-                    <div class="panel-9"></div>
-                </div>
+                <div class="left-corner-spacer"></div>
+                <div class="panel-3">MESSAGES</div>
+                <div class="panel-5 market-section">MARCHÉ</div>
+                <div class="panel-6 actions-section">ACTIONS</div>
+                <div class="panel-7 players-section">JOUEURS</div>
+                <div class="panel-8 tokens-section">JETONS&nbsp;<span class="hop">DISPONIBLES</span></div>
+                <div class="panel-9"></div>
             </div>
             <div class="right-frame">
                 <div class="bar-panel">

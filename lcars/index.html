@@ -314,12 +314,43 @@
             padding-left: clamp(20px, 2vw, 50px);
         }
 
-        .wrap.small .left-frame {
-            width: clamp(95px, 20%, 130px);
+        /* ---- Player panel grid (same subgrid technique as outer layout) ---- */
+        .wrap.small {
+            display: grid;
+            grid-template-columns: clamp(95px, 20%, 130px) 1fr;
+            grid-template-rows: auto auto auto auto; /* bar, MAIN, CHAMEAUX, JETONS */
         }
 
-        .wrap.small .right-frame main {
+        .wrap.small > .left-frame {
+            grid-column: 1;
+            grid-row: 1 / 5;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: subgrid;
+            width: auto;
+            padding-top: 0;
+        }
+
+        .wrap.small > .right-frame {
+            grid-column: 2;
+            grid-row: 1 / 5;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: subgrid;
+        }
+
+        .wrap.small > .right-frame > main {
+            grid-row: 2 / 5;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: subgrid;
             padding-left: clamp(10px, 1vw, 30px);
+        }
+
+        /* Reset margins on player content so subgrid rows align exactly */
+        .wrap.small > .right-frame > main > * {
+            margin-top: 0;
+            margin-bottom: 0;
         }
 
         #market-cards {
@@ -587,11 +618,10 @@
                             <section class="wrap-standard">
                                 <div class="wrap small">
                                     <div class="left-frame">
-                                        <div>
-                                            <div class="panel-3">MAIN</div>
-                                            <div class="panel-6 camels-section">CHAMEAUX</div>
-                                            <div class="panel-5 player-tokens-section">JETONS</div>
-                                        </div>
+                                        <div class="player-bar-spacer"></div>
+                                        <div class="panel-3">MAIN</div>
+                                        <div class="panel-6 camels-section">CHAMEAUX</div>
+                                        <div class="panel-5 player-tokens-section">JETONS</div>
                                     </div>
                                     <div class="right-frame">
                                         <div class="bar-panel">
@@ -603,7 +633,6 @@
                                             <div class="bar-10"></div>
                                         </div>
                                         <main>
-                                            <div style="height: 30px"></div>
                                             <div class="card-slots-container small-buttons buttons" id="player1-hand">
                                                 <a href="" id="player1-hand-slot-0"></a>
                                                 <a href="" id="player1-hand-slot-1"></a>
@@ -632,11 +661,10 @@
                             <section class="wrap-standard">
                                 <div class="wrap small">
                                     <div class="left-frame">
-                                        <div>
-                                            <div class="panel-3">MAIN</div>
-                                            <div class="panel-6 camels-section">CHAMEAUX</div>
-                                            <div class="panel-5 player-tokens-section">JETONS</div>
-                                        </div>
+                                        <div class="player-bar-spacer"></div>
+                                        <div class="panel-3">MAIN</div>
+                                        <div class="panel-6 camels-section">CHAMEAUX</div>
+                                        <div class="panel-5 player-tokens-section">JETONS</div>
                                     </div>
                                     <div class="right-frame">
                                         <div class="bar-panel">
@@ -648,7 +676,6 @@
                                             <div class="bar-10"></div>
                                         </div>
                                         <main>
-                                            <div style="height: 30px"></div>
                                             <div class="card-slots-container small-buttons buttons" id="player2-hand">
                                                 <a href="" id="player2-hand-slot-0"></a>
                                                 <a href="" id="player2-hand-slot-1"></a>

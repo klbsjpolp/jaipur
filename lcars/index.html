@@ -98,6 +98,21 @@
             flex-direction: row;
             gap: 5px;
             align-items: center;
+            flex-wrap: wrap;
+            min-height: 44px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        #message-zone {
+            flex: 1 1 320px;
+            min-width: 0;
         }
 
         /* Left frame content */
@@ -122,7 +137,8 @@
             margin-bottom: 15px;
             padding: 10px;
             border-radius: 10px;
-            width: 50%;
+            width: calc(50% - 6px);
+            min-width: 0;
         }
 
         .player-panel.active {
@@ -141,21 +157,24 @@
         }
 
         .market-section {
-            height: 15vh;
+            min-height: 128px;
+            height: auto;
         }
 
         .actions-section {
-            height: 20vh;
+            min-height: 176px;
+            height: auto;
         }
 
         .tokens-section {
-            height: 22vh;
+            min-height: 180px;
+            height: auto;
             align-items: center;
         }
 
         .players-section {
-            height: 380px;
-            max-height: unset;
+            min-height: 380px;
+            height: auto;
         }
 
         .hand-section {
@@ -163,23 +182,28 @@
         }
 
         .camels-section {
-            height: 97px;
+            min-height: 92px;
+            height: auto;
         }
 
         .player-tokens-section {
-            height: 97px;
+            min-height: 92px;
+            height: auto;
         }
 
         #token-piles {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px 14px;
+            align-items: start;
         }
 
         .token-piles-line {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 25px;
+            gap: 16px;
+            min-width: 0;
         }
 
         .disabled {
@@ -233,12 +257,12 @@
         .token-bonus5 { background-color: var(--button-color); }
 
         .small-buttons a {
-            height: 40px;
-            width: 112px;
+            height: clamp(36px, 5.2vh, 42px);
+            width: clamp(84px, 9vw, 112px);
             /* Ajuster le padding pour maintenir les proportions */
             padding: 0.25em 0.5em;
             /* Garder la taille de police inchangée */
-            font-size: 100%;
+            font-size: clamp(0.8rem, 0.6rem + 0.6vw, 1rem);
             /* Ajuster la marge pour un espacement correct */
             margin: 2px;
             /* Centrer le texte verticalement */
@@ -249,8 +273,9 @@
 
         /* S'assurer que le conteneur small-buttons s'adapte correctement */
         .small-buttons {
-            min-height: 50%;
-            max-height: 50%;
+            min-height: 0;
+            max-height: none;
+            margin-top: 4px;
         }
 
         .selected {
@@ -290,11 +315,56 @@
         }
 
         .wrap.small .left-frame {
-            width: 20%;
+            width: clamp(95px, 20%, 130px);
         }
 
         .wrap.small .right-frame main {
             padding-left: clamp(10px, 1vw, 30px);
+        }
+
+        #market-cards {
+            margin-top: 0;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        #market-cards a {
+            width: 100%;
+            min-width: 0;
+            height: clamp(52px, 8vh, 74px);
+            padding-inline: clamp(0.4rem, 1vw, 0.9rem);
+            padding-bottom: 0.4rem;
+            font-size: clamp(0.78rem, 0.58rem + 0.65vw, 1rem);
+            line-height: 1.1;
+            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #possible-actions {
+            margin-top: 0;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        #possible-actions a {
+            width: 100%;
+            min-width: 0;
+            min-height: 46px;
+            height: auto;
+            padding: 0.45rem 0.9rem;
+            justify-content: flex-end;
+            align-items: center;
+            line-height: 1.1;
+            font-size: clamp(0.8rem, 0.63rem + 0.5vw, 0.96rem);
         }
 
         .text-bar {
@@ -308,11 +378,59 @@
         .players-container {
             display: flex;
             justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
         }
 
         .auto-button {
             padding-inline: 5px;
             width: auto;
+        }
+
+        @media (max-width: 1180px) {
+            .players-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .player-panel {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .players-section {
+                min-height: 0;
+            }
+
+            .right-frame main {
+                padding-left: clamp(12px, 1.5vw, 24px);
+            }
+        }
+
+        @media (max-width: 900px) {
+            #market-cards {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            #possible-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .status-row {
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 700px) {
+            #market-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .small-buttons a {
+                flex: 1 1 calc(50% - 4px);
+                width: calc(50% - 4px);
+                max-width: none;
+            }
         }
     </style>
 </head>
@@ -339,7 +457,7 @@
                 </div>
 
                 <main>
-                    <div style="display: flex; justify-content: space-between; align-items: end">
+                    <div class="status-row">
                         <div class="go-big" id="message-zone">
                             Bienvenue à Jaipur! Cliquez sur une carte pour commencer.
                         </div>
@@ -353,7 +471,7 @@
                         <a href class="" id="market-slot-4"></a>
                     </div>
                     <div class="action-buttons actions-section">
-                        <div class="buttons" style="margin-top: 0" id="possible-actions"></div>
+                        <div class="buttons" id="possible-actions"></div>
                         <div class="action-buttons-row go-big" id="possible-actions-message"></div>
                     </div>
                     <!-- Players section -->

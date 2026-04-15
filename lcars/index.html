@@ -146,6 +146,11 @@
             --box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
+        /* Push player content below the 60px corner decoration */
+        .player-bar-spacer {
+            min-height: calc(var(--bar-height) + 15px);
+        }
+
         .player1-header {
             color: var(--bluey);
             font-weight: bold;
@@ -192,17 +197,18 @@
         }
 
         #token-piles {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 10px 14px;
-            align-items: start;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
         }
 
         .token-piles-line {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            flex-wrap: wrap;
             align-items: flex-start;
-            gap: 16px;
+            gap: 4px 12px;
             min-width: 0;
         }
 
@@ -345,6 +351,14 @@
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: subgrid;
             padding-left: clamp(10px, 1vw, 30px);
+            padding-top: 0;
+        }
+
+        /* MAIN label at bottom of its row, like MESSAGES */
+        .wrap.small > .left-frame > .panel-3 {
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
         }
 
         /* Reset margins on player content so subgrid rows align exactly */
@@ -419,6 +433,12 @@
         }
 
         @media (max-width: 1180px) {
+            .right-frame main {
+                padding-left: clamp(12px, 1.5vw, 24px);
+            }
+        }
+
+        @media (max-width: 600px) {
             .players-container {
                 flex-direction: column;
                 gap: 10px;
@@ -431,10 +451,6 @@
 
             .players-section {
                 min-height: 0;
-            }
-
-            .right-frame main {
-                padding-left: clamp(12px, 1.5vw, 24px);
             }
         }
 
@@ -449,6 +465,15 @@
 
             .status-row {
                 align-items: flex-start;
+            }
+        }
+
+        /* On iPad (side-by-side players), force exactly 3 hand buttons per row */
+        @media (min-width: 601px) and (max-width: 1200px) {
+            .wrap.small .small-buttons a {
+                flex: 0 0 calc(33.33% - 10px);
+                width: auto;
+                min-width: 0;
             }
         }
 

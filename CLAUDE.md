@@ -22,3 +22,4 @@ python3 -m http.server 8000
 | `lcars/` | LCARS theme — see `lcars/CLAUDE.md` |
 | `assets/` | Shared CSS and fonts (used by LCARS theme) |
 | `docs/game-logic.md` | `etatJeu` state shape, key functions, French/English glossary |
+| `classic-standard.html` | LCARS component showcase — reference for `classic.css` UI elements |

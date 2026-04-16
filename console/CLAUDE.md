@@ -4,6 +4,10 @@ Dark terminal aesthetic, monospace font. Entry point: `index.html`.
 
 Imports `../jaipur-game.js` for all game logic — no theme-specific JS.
 
+## Assets
+
+- `index.html` — all theme CSS is inline in `<style>` tags; no external stylesheet
+
 ## PWA assets
 
 - `manifest.webmanifest` — app manifest

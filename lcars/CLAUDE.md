@@ -17,3 +17,14 @@ Imports `../jaipur-game.js` for all game logic — no theme-specific JS.
 - `game-image.svg` — app icon
 
 When updating cached files, bump the cache version string in `sw.js` (e.g. `jaipur-lcars-v1-2026-03-21`).
+
+## Layout notes
+
+- CSS subgrid (`grid-template-rows: subgrid`) aligns left-frame labels with right-frame content in `.wrap.small`
+- `.right-frame:before/:after` corner decorations sit at `top: var(--bar-height)` — player content must start below them via `.player-bar-spacer`
+- `classic-standard.html` at the project root is a component showcase for `classic.css` UI elements
+
+## Gotchas
+
+- **Linter**: A linter runs on `index.html` and silently rewrites CSS values — don't fight its changes
+- **iOS Safari animations**: CSS animations triggered by adding a class don't reliably start; set `element.style.animation` directly as an inline style instead

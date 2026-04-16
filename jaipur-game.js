@@ -568,7 +568,7 @@ function toggleAIMode(joueurId) {
     return { 
         success: true, 
         enabled: etatJeu.aiMode[joueurId - 1],
-        message: `Mode AI ${etatJeu.aiMode[joueurId - 1] ? "activé" : "désactivé"} pour le Joueur ${joueurId}`
+        message: `Mode IA ${etatJeu.aiMode[joueurId - 1] ? "activé" : "désactivé"} pour le Joueur ${joueurId}`
     };
 }
 

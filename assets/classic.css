@@ -1551,7 +1551,7 @@ nav a:hover {
 .panel-8,
 .panel-10 {
 	padding-block: .75rem;
-	padding-right: .75rem;
+	padding-right: .25rem;
 }
 
 .panel-4	{
@@ -1565,7 +1565,7 @@ nav a:hover {
 
 .panel-5	{
 	padding-block: 1.25rem;
-	padding-right: .75rem;
+	padding-right: .25rem;
 	background-color: var(--panel-5-color);
 }
 

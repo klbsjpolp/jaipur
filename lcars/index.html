@@ -46,6 +46,8 @@
             margin-bottom: 25px;
             display: flex;
             flex-wrap: wrap;
+            align-items: flex-start;
+            align-self: start;
             gap: 1px;
         }
 
@@ -172,9 +174,8 @@
         }
 
         .tokens-section {
-            min-height: 180px;
+            min-height: 216px;
             height: auto;
-            align-items: center;
         }
 
         .players-section {
@@ -199,8 +200,9 @@
         #token-piles {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 14px;
             align-items: flex-start;
+            align-self: start;
         }
 
         .token-piles-line {
@@ -208,7 +210,7 @@
             flex-direction: row;
             flex-wrap: wrap;
             align-items: flex-start;
-            gap: 4px 12px;
+            gap: 14px;
             min-width: 0;
         }
 
@@ -242,7 +244,7 @@
         .token-bonus4,
         .token-bonus5 {
             padding-inline: 0.5rem;
-            padding-block: 0.25rem;
+            padding-block: 0.1rem;
             margin-right: 5px;
             color: black;
         }
@@ -379,8 +381,8 @@
             width: 100%;
             min-width: 0;
             height: clamp(52px, 8vh, 74px);
-            padding-inline: clamp(0.4rem, 1vw, 0.9rem);
-            padding-bottom: 0.4rem;
+            padding-inline: clamp(1rem, 1.5vw, 0.9rem);
+            padding-bottom: 0.6rem;
             font-size: clamp(0.78rem, 0.58rem + 0.65vw, 1rem);
             line-height: 1.1;
             justify-content: flex-end;
@@ -576,7 +578,6 @@
         }
 
         #gap > .left-frame > .panel-6 {
-            min-height: min(29vh, 360px);
             height: auto;
             max-height: none;
         }
@@ -586,7 +587,6 @@
             max-height: none;
         }
         #gap > .left-frame > .panel-8 {
-            min-height: 15vh;
             height: auto;
             max-height: none;
         }
@@ -782,7 +782,11 @@
             // Fonction pour mettre à jour l'apparence des boutons AUTO
             function updateAutoButtonAppearance() {
                 player1AutoButton.classList.toggle("blink-fast", isAIMode(1));
+                player1AutoButton.classList.toggle("bar-7", !isAIMode(1));
+                player1AutoButton.classList.toggle("bar-9", isAIMode(1));
                 player2AutoButton.classList.toggle("blink-fast", isAIMode(2));
+                player2AutoButton.classList.toggle("bar-7", !isAIMode(2));
+                player2AutoButton.classList.toggle("bar-9", isAIMode(2));
             }
 
             // Ajouter les écouteurs d'événements pour les boutons AUTO
@@ -887,7 +891,7 @@
                 playerNameElement.classList.toggle('blink-fast', joueurId === etatJeu.joueurActif);
 
                 // Mettre à jour le score
-                playerNameElement.innerText = "JOUEUR " + joueurId + (joueur.sceaux ? ` (${joueur.sceaux} SCEAU${joueur.sceaux > 1 ? 'X' : ''})` : '');
+                playerNameElement.innerText = "JOUEUR " + joueurId + (joueur.sceaux ? ` (★)` : '');
 
                 // Mettre à jour la main du joueur
                 for (let j = 0; j < 7; j++) {
@@ -963,9 +967,9 @@
                         overflowElement.textContent = `+${camelCount - 5}`;
                         if (joueurId === etatJeu.joueurActif)
                             overflowElement.classList.add(TYPES_MARCHANDISES["chameau"].classe);
-                    } else {
+                    } else
                         overflowElement.textContent = "";
-                    }
+                    overflowElement.classList.toggle("disabled", camelCount <= 5 || joueurId !== etatJeu.joueurActif);
                 }
 
                 // Mettre à jour les jetons

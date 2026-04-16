@@ -227,6 +227,19 @@
             box-shadow: none;
         }
 
+        .inactive {
+            pointer-events: none;
+            opacity: 0.9;
+            filter: brightness(0.9);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .inactive:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
         main {
             padding-top: 0;
         }
@@ -930,16 +943,19 @@
                         }
                     }
                 });
-
-                // Mettre à jour les chameaux
-                for (let j = 0; j < 5; j++) {
-                    const slotElement = document.getElementById(`player${joueurId}-camel-slot-${j}`);
-                    slotElement.innerHTML = "";
-                    const newSlotElement = slotElement.cloneNode(true);
+                
+                function disableAndClone(element) {
+                    element.innerHTML = "";
+                    const newSlotElement = element.cloneNode(true);
                     newSlotElement.className = "";
                     newSlotElement.classList.add("disabled");
-                    slotElement.parentNode.replaceChild(newSlotElement, slotElement);
+                    element.parentNode.replaceChild(newSlotElement, element);
                 }
+
+                // Mettre à jour les chameaux
+                for (let j = 0; j < 5; j++)
+                    disableAndClone(document.getElementById(`player${joueurId}-camel-slot-${j}`));
+                disableAndClone(document.getElementById(`player${joueurId}-camel-overflow`));
 
                 const camelCount = joueur.chameaux.length;
                 const displayCamels = Math.min(camelCount, 5);
@@ -964,12 +980,14 @@
                 if (overflowElement) {
                     overflowElement.classList.remove(TYPES_MARCHANDISES["chameau"].classe);
                     if (camelCount > 5) {
-                        overflowElement.textContent = `+${camelCount - 5}`;
-                        if (joueurId === etatJeu.joueurActif)
+                        overflowElement.textContent = `＋ ${camelCount - 5}`;
+                        if (joueurId === etatJeu.joueurActif) {
                             overflowElement.classList.add(TYPES_MARCHANDISES["chameau"].classe);
+                            overflowElement.classList.remove("disabled");
+                            overflowElement.classList.add("inactive");
+                        }
                     } else
                         overflowElement.textContent = "";
-                    overflowElement.classList.toggle("disabled", camelCount <= 5 || joueurId !== etatJeu.joueurActif);
                 }
 
                 // Mettre à jour les jetons

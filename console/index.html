@@ -67,6 +67,7 @@
             cursor: pointer;
             text-align: center;
             min-width: 100px;
+            font-weight: bolder;
         }
 
         .card:hover {
@@ -167,6 +168,7 @@
             padding: 5px;
             min-width: 120px;
             text-align: center;
+            font-weight: bolder;
         }
 
         .actions-zone {
@@ -220,41 +222,40 @@
 
         /* Couleurs des marchandises */
         .diamant {
-            color: #569CD6; /* Bleu Brillant */
-            border-color: #569CD6;
+            color: black;
+            background-color: #569CD6; /* Bleu Brillant */
         }
 
         .or {
-            color: #DCDCAA; /* Jaune Brillant */
-            border-color: #DCDCAA;
+            color: black;
+            background-color: #DCDCAA; /* Jaune Brillant */
         }
 
         .argent {
-            color: #B5CEA8; /* Gris Clair/Blanc */
-            border-color: #B5CEA8;
+            color: black;
+            background-color: #B5CEA8; /* Gris Clair/Blanc */
         }
 
         .tissu {
-            color: #C586C0; /* Magenta Brillant */
-            border-color: #C586C0;
+            color: black;
+            background-color: #C586C0; /* Magenta Brillant */
         }
 
         .epice {
-            color: #CE9178; /* Orange/Rouge Clair */
-            border-color: #CE9178;
+            color: black;
+            background-color: #CE9178; /* Orange/Rouge Clair */
         }
 
         .cuir {
-            color: #D7BA7D; /* Marron Clair/Jaune Foncé */
-            border-color: #D7BA7D;
+            color: black;
+            background-color: #D7BA7D; /* Marron Clair/Jaune Foncé */
         }
 
         .chameau {
-            color: #8B4513; /* Brown */
-            border-color: #8B4513;
+            color: black;
+            background-color: #8B4513; /* Brown */
         }
-
-
+        
         .modal {
             display: none;
             position: fixed;
@@ -317,7 +318,7 @@
             }
 
             .player {
-                width: 100%;
+                width: inherit;
                 margin-bottom: 10px;
             }
 
@@ -331,7 +332,6 @@
                 min-width: 80px;
                 padding: 8px 12px;
                 margin: 3px;
-                font-size: 0.9em;
                 touch-action: manipulation;
             }
 
@@ -406,7 +406,6 @@
 
             .player-title {
                 font-size: 1.1em;
-                flex-direction: column;
                 gap: 5px;
             }
         }
@@ -428,7 +427,6 @@
             .card {
                 min-width: 70px;
                 padding: 6px 10px;
-                font-size: 0.8em;
             }
 
             .action-button {

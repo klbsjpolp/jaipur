@@ -164,7 +164,7 @@
         }
 
         .market-section {
-            min-height: 128px;
+            min-height: 138px;
             height: auto;
         }
 
@@ -385,9 +385,10 @@
         #market-cards {
             margin-top: 0;
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 8px;
             align-items: stretch;
+            align-content: start;
         }
 
         #market-cards a {
@@ -467,15 +468,15 @@
             .players-section {
                 min-height: 0;
             }
+
+            #possible-actions {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 900px) {
             #market-cards {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-
-            #possible-actions {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
             }
 
             .status-row {
@@ -494,7 +495,7 @@
 
         @media (max-width: 700px) {
             #market-cards {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-columns: repeat(3, minmax(0, 1fr));
             }
 
             .small-buttons a {

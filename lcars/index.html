@@ -843,6 +843,8 @@
             // Initialiser l'apparence des boutons AUTO
             updateAutoButtonAppearance();
 
+            window.addEventListener("resize", mettreAJourJoueurs);
+
             // Ajouter un écouteur d'événement pour les actions de l'IA
             document.addEventListener('aiPlayed', (event) => {
                 if (event.detail && event.detail.success) {
@@ -862,6 +864,11 @@
             mettreAJourMarche();
             mettreAJourJoueurs();
             mettreAJourJetons();
+        }
+
+        function formatNomJoueur(joueurId, joueur) {
+            const nom = window.innerWidth < 1100 ? `J${joueurId}` : `JOUEUR ${joueurId}`;
+            return nom + (joueur.sceaux ? ` (★)` : '');
         }
 
         // Mettre à jour l'affichage du marché
@@ -905,7 +912,7 @@
                 playerNameElement.classList.toggle('blink-fast', joueurId === etatJeu.joueurActif);
 
                 // Mettre à jour le score
-                playerNameElement.innerText = "JOUEUR " + joueurId + (joueur.sceaux ? ` (★)` : '');
+                playerNameElement.innerText = formatNomJoueur(joueurId, joueur);
 
                 // Mettre à jour la main du joueur
                 for (let j = 0; j < 7; j++) {
